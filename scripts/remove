@@ -1,0 +1,10 @@
+#!/bin/bash
+
+domain=$(sudo yunohost app setting jenkins domain)
+
+sudo yunohost service remove ynh-jenkins
+
+sudo apt-get purge jenkins
+sudo rm /etc/apt/sources.list.d/jenkins.list
+# TODO remove repo key
+sudo apt-get update

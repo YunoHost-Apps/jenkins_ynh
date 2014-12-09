@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Retrieve arguments
+domain=$(sudo yunohost app setting jenkins domain)
+path=$(sudo yunohost app setting jenkins path)
+path=${path%/}
+
+# TODO

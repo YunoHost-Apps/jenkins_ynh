@@ -1,0 +1,36 @@
+{
+    "name": "Jenkins",
+    "id": "jenkins",
+    "description": {
+        "en": "Jenkins",
+        "fr": "Jenkins"
+    },
+    "developer": {
+        "name": "Julien Malik",
+        "email": "julien.malik@paraiso.me"
+    },
+    "multi_instance": "false",
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "ask": {
+                    "en": "Choose a domain for Jenkins",
+                    "fr": "Choisissez un domaine pour Jenkins"
+                },
+                "example": "domain.org"
+            },
+            {
+                "name": "path",
+                "ask": {
+                    "en": "Choose a path for Jenkins",
+                    "fr": "Choisissez un path pour Jenkins"
+                },
+                "example": "/jenkins",
+                "default": "/jenkins"
+            }
+        ]
+    }
+}
+
+
