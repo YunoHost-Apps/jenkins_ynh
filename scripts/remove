@@ -2,6 +2,10 @@
 
 domain=$(sudo yunohost app setting jenkins domain)
 
+sudo rm /etc/nginx/conf.d/$domain/jenkins.conf
+sudo yunohost ssowatconf
+sudo service nginx reload
+
 sudo yunohost service remove ynh-jenkins
 
 sudo apt-get purge jenkins

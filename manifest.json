@@ -2,8 +2,8 @@
     "name": "Jenkins",
     "id": "jenkins",
     "description": {
-        "en": "Jenkins",
-        "fr": "Jenkins"
+        "en": "Serveur d'intégration continue extensible",
+        "fr": "Extendable continuous integration server"
     },
     "developer": {
         "name": "Julien Malik",
@@ -32,5 +32,4 @@
         ]
     }
 }
-
 

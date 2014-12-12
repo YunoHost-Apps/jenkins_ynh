@@ -5,4 +5,8 @@ domain=$(sudo yunohost app setting jenkins domain)
 path=$(sudo yunohost app setting jenkins path)
 path=${path%/}
 
-# TODO
+sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
+sudo service nginx reload
+sudo yunohost app ssowatconf
+
