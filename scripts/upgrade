@@ -4,9 +4,19 @@
 domain=$(sudo yunohost app setting jenkins domain)
 path=$(sudo yunohost app setting jenkins path)
 path=${path%/}
+is_public=$(sudo yunohost app setting jenkins is_public)
 
 sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
+
+
+if [ "$is_public" = "Yes" ];
+then
+  sudo yunohost app setting jenkins unprotected_uris -v "/"
+else
+  sudo yunohost app setting jenkins unprotected_uris -d
+fi
+
 sudo service nginx reload
 sudo yunohost app ssowatconf
 

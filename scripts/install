@@ -3,6 +3,7 @@
 # Retrieve arguments
 domain=$1
 path=$2
+is_public=$3
 
 sudo yunohost app checkport 8080
 if [[ ! $? -eq 0 ]]; then
@@ -32,5 +33,12 @@ sudo yunohost service add jenkins -l /var/log/jenkins/jenkins.log
 echo "Nginx configuration (sso disabled)..."
 sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
+
+sudo yunohost app setting jenkins is_public -v $is_public
+if [ "$is_public" = "Yes" ];
+then
+  sudo yunohost app setting jenkins unprotected_uris -v "/"
+fi
+
 sudo service nginx reload
 sudo yunohost app ssowatconf
