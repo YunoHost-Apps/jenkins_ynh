@@ -26,7 +26,14 @@ EOF
 
 sudo apt-get update
 sudo apt-get install jenkins -y
-sudo service jenkins start
+
+if [[ "$path" != "/" ]];
+then
+  # $ means 'process only the last line'
+  sudo sed -i '$ s@--ajp13Port=$AJP_PORT@--ajp13Port=$AJP_PORT --prefix=$PREFIX@g' /etc/default/jenkins
+fi
+
+sudo service jenkins restart
 
 sudo yunohost service add jenkins -l /var/log/jenkins/jenkins.log
 
