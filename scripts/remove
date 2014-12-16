@@ -4,7 +4,7 @@ domain=$(sudo yunohost app setting jenkins domain)
 
 sudo rm /etc/nginx/conf.d/$domain.d/jenkins.conf
 
-sudo apt-get purge jenkins
+sudo apt-get purge jenkins -y
 sudo rm /etc/apt/sources.list.d/jenkins.list
 # TODO remove repo key
 sudo apt-get update
