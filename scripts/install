@@ -33,7 +33,6 @@ then
   # $ means 'process only the last line'
   sudo sed -i '$ s@--ajp13Port=$AJP_PORT@--ajp13Port=$AJP_PORT --prefix=$PREFIX@g' /etc/default/jenkins
 fi
-sudo sed -i 's@@$path@g' /etc/default/jenkins
 sudo sed -i "/HTTP_PORT=.*/aHTTP_PORT=$port" /etc/default/jenkins
 
 sudo service jenkins restart
