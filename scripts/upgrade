@@ -7,7 +7,7 @@ path=${path%/}
 is_public=$(sudo yunohost app setting jenkins is_public)
 port=$(sudo yunohost app setting jenkins port)
 
-sudo sed -i "/HTTP_PORT=.*/aHTTP_PORT=$port" /etc/default/jenkins
+sudo sed -i "s/HTTP_PORT=.*/HTTP_PORT=$port/g" /etc/default/jenkins
 
 sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_PORT@$port@g" ../conf/nginx.conf
