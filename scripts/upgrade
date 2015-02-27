@@ -5,10 +5,13 @@ domain=$(sudo yunohost app setting jenkins domain)
 path=$(sudo yunohost app setting jenkins path)
 path=${path%/}
 is_public=$(sudo yunohost app setting jenkins is_public)
+port=$(sudo yunohost app setting jenkins port)
+
+sudo sed -i "/HTTP_PORT=.*/aHTTP_PORT=$port" /etc/default/jenkins
 
 sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_PORT@$port@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
-
 
 if [ "$is_public" = "Yes" ];
 then
