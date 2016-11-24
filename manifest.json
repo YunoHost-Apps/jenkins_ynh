@@ -37,6 +37,15 @@
                 },
                 "choices": ["Yes", "No"],
                 "default": "Yes"
+            },
+            {
+                "name": "port",
+                "ask": {
+                    "en": "Internal running port ?",
+                    "fr": "Port de fonctionnement interne ?"
+                },
+                "example": "8080",
+                "default": "8080"
             }
         ]
     }

@@ -4,10 +4,11 @@
 domain=$1
 path=$2
 is_public=$3
+port=$4
 
-sudo yunohost app checkport 8080
+sudo yunohost app checkport $port
 if [[ ! $? -eq 0 ]]; then
-    echo "Port 8080 is not available. Aborting..."
+    echo "Port $port is not available. Aborting..."
     exit 1
 fi
 
@@ -32,6 +33,7 @@ then
   # $ means 'process only the last line'
   sudo sed -i '$ s@--ajp13Port=$AJP_PORT@--ajp13Port=$AJP_PORT --prefix=$PREFIX@g' /etc/default/jenkins
 fi
+sudo sed -i "s/HTTP_PORT=.*/HTTP_PORT=$port/g" /etc/default/jenkins
 
 sudo service jenkins restart
 
@@ -39,6 +41,7 @@ sudo yunohost service add jenkins -l /var/log/jenkins/jenkins.log
 
 echo "Nginx configuration (sso disabled)..."
 sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_PORT@$port@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
 
 sudo yunohost app setting jenkins is_public -v $is_public
@@ -46,6 +49,9 @@ if [ "$is_public" = "Yes" ];
 then
   sudo yunohost app setting jenkins unprotected_uris -v "/"
 fi
+
+# restart 2 times for debug
+sudo service jenkins restart
 
 sudo service nginx reload
 sudo yunohost app ssowatconf
