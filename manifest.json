@@ -1,11 +1,16 @@
 {
     "name": "Jenkins",
     "id": "jenkins",
+	"packaging_format": 1,
+	"requirements": {
+		"yunohost": ">= 2.4"
+	},
     "description": {
         "en": "Serveur d'intégration continue extensible",
         "fr": "Extendable continuous integration server"
     },
-    "developer": {
+	"license": "free",
+    "maintainer": {
         "name": "Julien Malik",
         "email": "julien.malik@paraiso.me"
     },
@@ -18,7 +23,8 @@
                     "en": "Choose a domain for Jenkins",
                     "fr": "Choisissez un domaine pour Jenkins"
                 },
-                "example": "domain.org"
+                "example": "domain.org",
+                "default": "sous.crudelis-test4.fr"
             },
             {
                 "name": "path",
@@ -27,7 +33,7 @@
                     "fr": "Choisissez un path pour Jenkins"
                 },
                 "example": "/jenkins",
-                "default": "/jenkins"
+                "default": "/"
             },
             {
                 "name": "is_public",
