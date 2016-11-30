@@ -9,6 +9,10 @@ CLEAN_SETUP () {
 		kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
 		sudo rm -f "$tempfile"
 	fi
+
+	# Clean hosts
+	sudo sed -i '/#jenkins/d' /etc/hosts
+
 	echo ""
 }
 TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
@@ -91,6 +95,7 @@ sudo yunohost service add $app -l /var/log/$app/$app.log
 
 # Surveille le démarrage du service.
 config_OK=0
+echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
 for i in `seq 1 60`
 do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
@@ -152,3 +157,6 @@ if [ "$is_public" = "No" ];
 then	# Retire l'accès public
 	sudo yunohost app setting $app unprotected_uris -d
 fi
+
+# Clean hosts
+sudo sed -i '/#jenkins/d' /etc/hosts
