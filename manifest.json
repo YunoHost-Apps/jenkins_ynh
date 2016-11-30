@@ -9,28 +9,33 @@
         "en": "Serveur d'intégration continue extensible",
         "fr": "Extendable continuous integration server"
     },
+	"url": "https://jenkins.io/index.html",
 	"license": "free",
     "maintainer": {
-        "name": "Julien Malik",
+        "name": "Julien Malik et Maniack Crudelis",
         "email": "julien.malik@paraiso.me"
     },
-    "multi_instance": "false",
+    "multi_instance": false,
+	"services": [
+		"nginx"
+	],
     "arguments": {
         "install" : [
             {
                 "name": "domain",
+				"type": "domain",
                 "ask": {
                     "en": "Choose a domain for Jenkins",
                     "fr": "Choisissez un domaine pour Jenkins"
                 },
-                "example": "domain.org",
-                "default": "crudelis-test4.fr"
+                "example": "domain.org"
             },
             {
                 "name": "path",
+				"type": "path",
                 "ask": {
                     "en": "Choose a path for Jenkins",
-                    "fr": "Choisissez un path pour Jenkins"
+                    "fr": "Choisissez un chemin pour Jenkins"
                 },
                 "example": "/jenkins",
                 "default": "/jenkins"
@@ -43,17 +48,7 @@
                 },
                 "choices": ["Yes", "No"],
                 "default": "Yes"
-            },
-            {
-                "name": "port",
-                "ask": {
-                    "en": "Internal running port ?",
-                    "fr": "Port de fonctionnement interne ?"
-                },
-                "example": "8080",
-                "default": "8080"
             }
         ]
     }
 }
-
