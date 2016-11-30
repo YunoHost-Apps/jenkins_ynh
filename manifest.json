@@ -24,7 +24,7 @@
                     "fr": "Choisissez un domaine pour Jenkins"
                 },
                 "example": "domain.org",
-                "default": "sous.crudelis-test4.fr"
+                "default": "crudelis-test4.fr"
             },
             {
                 "name": "path",
@@ -33,7 +33,7 @@
                     "fr": "Choisissez un path pour Jenkins"
                 },
                 "example": "/jenkins",
-                "default": "/"
+                "default": "/jenkins"
             },
             {
                 "name": "is_public",
