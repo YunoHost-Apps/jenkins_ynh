@@ -4,7 +4,11 @@ source .fonctions	# Charge les fonctions génériques habituellement utilisées 
 
 CLEAN_SETUP () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
-# Pas de nettoyage supplémentaire nécessaire ici...
+	if test -n "$PID_TAIL"
+	then
+		kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
+		sudo rm -f "$tempfile"
+	fi
 	echo ""
 }
 TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
@@ -101,6 +105,7 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 				sleep 1
 			fi
 		done
+
 		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin reverse-proxy-auth-plugin
 
 		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
