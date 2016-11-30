@@ -47,11 +47,11 @@ FIND_PORT 8080	# Cherche un port libre.
 
 
 # Enregistre les infos dans la config YunoHost
-sudo yunohost app setting $app domain -v $domain
-sudo yunohost app setting $app path -v $path
-sudo yunohost app setting $app is_public -v $is_public
-sudo yunohost app setting $app port -v $port
-sudo yunohost app setting $app final_path -v $final_path
+ynh_app_setting_set $app domain $domain
+ynh_app_setting_set $app path $path
+ynh_app_setting_set $app is_public $is_public
+ynh_app_setting_set $app port $port
+ynh_app_setting_set $app final_path $final_path
 
 
 echo "Install dependencies..."
@@ -85,7 +85,7 @@ sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
-sudo yunohost app setting $app unprotected_uris -v "/"
+ynh_app_setting_set $app unprotected_uris "/"
 
 sudo service nginx reload
 sudo yunohost app ssowatconf
@@ -155,7 +155,7 @@ sudo rm "$tempfile"
 # Si Jenkins est privé, retire l'autorisation publique.
 if [ "$is_public" = "No" ];
 then	# Retire l'accès public
-	sudo yunohost app setting $app unprotected_uris -d
+	ynh_app_setting_delete $app unprotected_uris
 fi
 
 # Clean hosts

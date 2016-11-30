@@ -9,10 +9,10 @@ app=$YNH_APP_INSTANCE_NAME
 source /usr/share/yunohost/helpers
 
 # Retrieve arguments
-domain=$(sudo yunohost app setting $app domain)
-path=$(sudo yunohost app setting $app path)
-is_public=$(sudo yunohost app setting $app is_public)
-port=$(sudo yunohost app setting $app port)
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+is_public=$(ynh_app_setting_get $app is_public)
+port=$(ynh_app_setting_get $app port)
 
 
 # Copie le fichier de config nginx
@@ -24,9 +24,9 @@ sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
 if [ "$is_public" = "Yes" ];
 then
-  sudo yunohost app setting $app unprotected_uris -v "/"
+  ynh_app_setting_set $app unprotected_uris "/"
 else
-  sudo yunohost app setting $app unprotected_uris -d
+  ynh_app_setting_delete $app unprotected_uris
 fi
 
 sudo service nginx reload

@@ -5,8 +5,8 @@ app=$YNH_APP_INSTANCE_NAME
 
 # Source app helpers
 source /usr/share/yunohost/helpers
-final_path=$(sudo yunohost app setting $app final_path)
-domain=$(sudo yunohost app setting $app domain)
+final_path=$(ynh_app_setting_get $app final_path)
+domain=$(ynh_app_setting_get $app domain)
 
 
 # The parameter $1 is the backup directory location
@@ -22,4 +22,4 @@ sudo cp -a /etc/yunohost/apps/$app/. $backup_dir/yunohost
 sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $backup_dir/nginx.conf
 
 # Copie de la configuration de démarrage de Jenkins
-sudo cp -a /etc/default/$app/. $backup_dir/etc
+sudo cp -a /etc/default/$app $backup_dir/etc
