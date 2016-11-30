@@ -82,7 +82,7 @@ sudo service nginx reload
 sudo yunohost app ssowatconf
 
 # Ajoute le service au monitoring de Yunohost.
-sudo yunohost service add jenkins -l /var/log/$app/$app.log
+sudo yunohost service add $app -l /var/log/$app/$app.log
 
 # Surveille le démarrage du service.
 config_OK=0
@@ -101,6 +101,27 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 			fi
 		done
 		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin reverse-proxy-auth-plugin
+
+		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin cloudbees-folder	# Folders Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin pam-auth	# PAM Authentication plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin mailer	# Mailer Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ldap	# LDAP Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin build-timeout	# Build timeout plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin credentials-binding	# Credentials Binding Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin timestamper	# Timestamper
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ws-cleanup	# Workspace Cleanup Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ant	# Ant Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin gradle	# Gradle Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin workflow-aggregator	# Pipeline
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin git	# Git plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin github-organization-folder	# GitHub Organization Folder Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin subversion	# Subversion Plug-in
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin email-ext	# Email Extension Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ssh-slaves	# SSH Slaves plugin
 
 		# Configure la sécurité globale avec ldap par défaut.
 		sudo cp ../conf/config.xml /var/lib/jenkins/

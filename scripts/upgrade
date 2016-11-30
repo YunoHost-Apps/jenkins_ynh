@@ -1,25 +1,33 @@
 #!/bin/bash
 
+source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
+
+# Source app helpers
+source /usr/share/yunohost/helpers
+
 # Retrieve arguments
-domain=$(sudo yunohost app setting jenkins domain)
-path=$(sudo yunohost app setting jenkins path)
-path=${path%/}
-is_public=$(sudo yunohost app setting jenkins is_public)
-port=$(sudo yunohost app setting jenkins port)
+domain=$(sudo yunohost app setting $app domain)
+path=$(sudo yunohost app setting $app path)
+is_public=$(sudo yunohost app setting $app is_public)
+port=$(sudo yunohost app setting $app port)
 
-sudo sed -i "s/HTTP_PORT=.*/HTTP_PORT=$port/g" /etc/default/jenkins
 
-sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
-sed -i "s@YNH_PORT@$port@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/jenkins.conf
+# Copie le fichier de config nginx
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+# Et modifie les variables dans le fichier de configuration nginx
+sudo sed -i "s@__PATH__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
 if [ "$is_public" = "Yes" ];
 then
-  sudo yunohost app setting jenkins unprotected_uris -v "/"
+  sudo yunohost app setting $app unprotected_uris -v "/"
 else
-  sudo yunohost app setting jenkins unprotected_uris -d
+  sudo yunohost app setting $app unprotected_uris -d
 fi
 
 sudo service nginx reload
 sudo yunohost app ssowatconf
-
