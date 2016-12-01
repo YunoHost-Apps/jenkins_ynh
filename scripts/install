@@ -111,6 +111,7 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 			fi
 		done
 
+		# Installation du plugin pour l'authentification ldap et http auth
 		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin reverse-proxy-auth-plugin
 
 		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
@@ -134,6 +135,10 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin email-ext	# Email Extension Plugin
 		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ssh-slaves	# SSH Slaves plugin
 
+		# Installation de plugins supplémentaires pour le confort
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
+		java -jar /var/lib/jenkins/jenkins-cli.jar -s https://$domain$path install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
+
 		# Configure la sécurité globale avec ldap par défaut.
 		sudo cp ../conf/config.xml /var/lib/jenkins/
 		sudo chown jenkins: /var/lib/jenkins/config.xml
@@ -156,6 +161,7 @@ sudo rm "$tempfile"
 if [ "$is_public" = "No" ];
 then	# Retire l'accès public
 	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_set $app skipped_uris "/github-webhook"	# /path/github-webhook doit rester accessible pour les webhooks de github.
 fi
 
 # Clean hosts
