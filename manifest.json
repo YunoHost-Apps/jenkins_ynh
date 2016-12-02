@@ -13,7 +13,7 @@
 	"license": "free",
 	"maintainer": {
 		"name": "Julien Malik et Maniack Crudelis",
-		"email": "julien.malik@paraiso.me"
+		"email": "maniackc_dev@crudelis.fr"
 	},
 	"multi_instance": false,
 	"services": [
