@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
+
+# Source app helpers
+source /usr/share/yunohost/helpers
+
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+final_path=$(ynh_app_setting_get $app final_path)
+
+if [ -d $final_path ]; then
+    ynh_die "There is already a directory: $final_path"
+fi
+
+# The parameter $1 is the uncompressed restore directory location
+backup_dir=$1/apps/$app
+
+# Restore Nginx
+conf=/etc/nginx/conf.d/$domain.d/$app.conf
+if [ -f $conf ]; then
+    ynh_die "There is already a nginx conf file at this path: $conf"
+fi
+sudo cp -a $backup_dir/nginx.conf $conf
+
+# Restore YunoHost parameters
+sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
+
+echo "Reinstall dependencies..."
+wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+sudo apt-get update
+sudo apt-get install default-jre-headless -y
+sudo apt-get install jenkins -y
+
+# Restore sources & data
+sudo cp -a "$backup_dir/sources/." $final_path
+
+# Restauration de la configuration de démarrage de Jenkins
+sudo cp -a $backup_dir/etc /etc/default/$app
+
+sudo service $app restart	# Redémarre jenkins pour prendre en compte les modifications
+tempfile="$(mktemp)"
+tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
+PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
+
+# Ajoute le service au monitoring de Yunohost.
+sudo yunohost service add $app --log "/var/log/$app/$app.log"
+
+# Reload webserver
+sudo service nginx reload
+
+# Surveille le démarrage du service.
+for i in `seq 1 60`
+do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
+	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile"; then
+		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
+	fi
+	echo -n "." >&2
+	sleep 1
+done
+kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
+sudo rm "$tempfile"

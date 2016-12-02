@@ -1,53 +1,54 @@
 {
-    "name": "Jenkins",
-    "id": "jenkins",
-    "description": {
-        "en": "Serveur d'intégration continue extensible",
-        "fr": "Extendable continuous integration server"
-    },
-    "developer": {
-        "name": "Julien Malik",
-        "email": "julien.malik@paraiso.me"
-    },
-    "multi_instance": "false",
-    "arguments": {
-        "install" : [
-            {
-                "name": "domain",
-                "ask": {
-                    "en": "Choose a domain for Jenkins",
-                    "fr": "Choisissez un domaine pour Jenkins"
-                },
-                "example": "domain.org"
-            },
-            {
-                "name": "path",
-                "ask": {
-                    "en": "Choose a path for Jenkins",
-                    "fr": "Choisissez un path pour Jenkins"
-                },
-                "example": "/jenkins",
-                "default": "/jenkins"
-            },
-            {
-                "name": "is_public",
-                "ask": {
-                    "en": "Is it a public site?",
-                    "fr": "Est-ce un site public ?"
-                },
-                "choices": ["Yes", "No"],
-                "default": "Yes"
-            },
-            {
-                "name": "port",
-                "ask": {
-                    "en": "Internal running port ?",
-                    "fr": "Port de fonctionnement interne ?"
-                },
-                "example": "8080",
-                "default": "8080"
-            }
-        ]
-    }
+	"name": "Jenkins",
+	"id": "jenkins",
+	"packaging_format": 1,
+	"requirements": {
+		"yunohost": ">= 2.4"
+	},
+	"description": {
+		"en": "Serveur d'intégration continue extensible",
+		"fr": "Extendable continuous integration server"
+	},
+	"url": "https://jenkins.io/index.html",
+	"license": "free",
+	"maintainer": {
+		"name": "Julien Malik et Maniack Crudelis",
+		"email": "maniackc_dev@crudelis.fr"
+	},
+	"multi_instance": false,
+	"services": [
+		"nginx"
+	],
+	"arguments": {
+		"install" : [
+			{
+				"name": "domain",
+				"type": "domain",
+				"ask": {
+					"en": "Choose a domain for Jenkins",
+					"fr": "Choisissez un domaine pour Jenkins"
+				},
+				"example": "domain.org"
+			},
+			{
+				"name": "path",
+				"type": "path",
+				"ask": {
+					"en": "Choose a path for Jenkins",
+					"fr": "Choisissez un chemin pour Jenkins"
+				},
+				"example": "/jenkins",
+				"default": "/jenkins"
+			},
+			{
+				"name": "is_public",
+				"ask": {
+					"en": "Is it a public site?",
+					"fr": "Est-ce un site public ?"
+				},
+				"choices": ["Yes", "No"],
+				"default": "Yes"
+			}
+		]
+	}
 }
-
