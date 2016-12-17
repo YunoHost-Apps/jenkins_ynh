@@ -96,8 +96,8 @@ sudo yunohost service add $app -l /var/log/$app/$app.log
 # Surveille le démarrage du service.
 config_OK=0
 echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
-for i in `seq 1 60`
-do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
+for i in `seq 1 120`
+do	# La boucle attend le démarrage de jenkins Ou 2 minutes.
 	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
 		# Si le log annonce une première fois le démarrage de jenkins. Fait sauter la sécurité de la première connexion de l'admin. Qui bloque curl et demande une identification inexistante une fois sur deux...
 		sudo wget -nv --no-check-certificate https://$domain$path/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
@@ -149,6 +149,7 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 		i=1;
 	fi
 	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 1 ]; then
+		echo "Le service $app a démarré correctement." >&2
 		break	# Si le log annonce une deuxième fois le démarrage de jenkins, sort de la boucle.
 	fi
 	echo -n "." >&2
@@ -156,6 +157,9 @@ do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
 done
 kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
 sudo rm "$tempfile"
+if [ "$i" -ge 120 ]; then
+	echo "Le service $app n'a pas démarré dans le temps imparti." >&2; false
+fi
 
 # Si Jenkins est privé, retire l'autorisation publique.
 if [ "$is_public" = "No" ];

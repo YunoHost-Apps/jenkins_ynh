@@ -53,9 +53,10 @@ sudo yunohost service add $app --log "/var/log/$app/$app.log"
 sudo service nginx reload
 
 # Surveille le démarrage du service.
-for i in `seq 1 60`
-do	# La boucle attend le démarrage de jenkins Ou 60 secondes.
+for i in `seq 1 120`
+do	# La boucle attend le démarrage de jenkins Ou 120 secondes.
 	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile"; then
+		echo "Le service $app a démarré correctement." >&2
 		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
 	fi
 	echo -n "." >&2
