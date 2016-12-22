@@ -100,10 +100,11 @@ echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain
 for i in `seq 1 $timeout`
 do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur arm est trèèèèèèèèès long...).
 	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
-		# Si le log annonce une première fois le démarrage de jenkins. Fait sauter la sécurité de la première connexion de l'admin. Qui bloque curl et demande une identification inexistante une fois sur deux...
+		# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
 		sudo wget -nv --no-check-certificate https://$domain$path/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+		echo "" >&2
 		for i in `seq 1 $timeout`
-		do	# La boucle attend la mise à jour des dépôts de plugins. Ou 60 secondes.
+		do	# La boucle attend la mise à jour des dépôts de plugins.
 			if test -e /var/lib/jenkins/updates/default.json; then
 				break;
 			else
@@ -159,7 +160,7 @@ done
 kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
 sudo rm "$tempfile"
 if [ "$i" -ge $timeout ]; then
-	echo "Le service $app n'a pas démarré dans le temps imparti." >&2; false
+	echo -e "\nLe service $app n'a pas démarré dans le temps imparti." >&2; false
 fi
 
 # Si Jenkins est privé, retire l'autorisation publique.
