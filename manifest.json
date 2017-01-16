@@ -6,8 +6,8 @@
 		"yunohost": ">= 2.4"
 	},
 	"description": {
-		"en": "Serveur d'intégration continue extensible",
-		"fr": "Extendable continuous integration server"
+		"en": "Extendable continuous integration server",
+		"fr": "Serveur d'intégration continue extensible"
 	},
 	"url": "https://jenkins.io/index.html",
 	"license": "free",
