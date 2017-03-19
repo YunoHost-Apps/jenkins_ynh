@@ -1,33 +1,72 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source .fonctions
+source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
 
 # Récupère les infos de l'application.
 app=$YNH_APP_INSTANCE_NAME
 
-# Source app helpers
-source /usr/share/yunohost/helpers
-
-# Retrieve arguments
 domain=$(ynh_app_setting_get $app domain)
-path=$(ynh_app_setting_get $app path)
+path_url=$(ynh_app_setting_get $app path)
 is_public=$(ynh_app_setting_get $app is_public)
 port=$(ynh_app_setting_get $app port)
 
+#=================================================
+# FIX OLD THINGS
+#=================================================
+
+if [ "$is_public" = "Yes" ]; then
+	ynh_app_setting_set $app is_public 1	# Fixe is_public en booléen
+	is_public=1
+elif [ "$is_public" = "No" ]; then
+	ynh_app_setting_set $app is_public 0
+	is_public=0
+fi
+
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+
+BACKUP_BEFORE_UPGRADE	# Backup the current version of the app
+ynh_clean_setup () {
+	BACKUP_FAIL_UPGRADE	# restore it if the upgrade fails
+}
+ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
 
 # Copie le fichier de config nginx
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 # Et modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATH__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__PATH__@$path_url@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
 sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
 
-if [ "$is_public" = "Yes" ];
+#=================================================
+# SETUP SSOWAT
+#=================================================
+
+if [ $is_public -eq 1 ]
 then
-  ynh_app_setting_set $app unprotected_uris "/"
+	ynh_app_setting_set $app unprotected_uris "/"
 else
-  ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete $app unprotected_uris
 fi
 
-sudo service nginx reload
-sudo yunohost app ssowatconf
+#=================================================
+# RELOAD NGINX
+#=================================================
+
+sudo systemctl reload nginx

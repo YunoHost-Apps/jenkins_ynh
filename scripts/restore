@@ -1,66 +1,111 @@
 #!/bin/bash
 
-# Récupère les infos de l'application.
-app=$YNH_APP_INSTANCE_NAME
+#=================================================
+# GENERIC STARTING
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
 
-# Source app helpers
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+if [ ! -e .fonctions ]; then
+	# Rapatrie le fichier de fonctions si il n'est pas dans le dossier courant
+	sudo cp ../settings/scripts/.fonctions ./.fonctions
+	sudo chmod a+rx .fonctions
+fi
+source .fonctions
 source /usr/share/yunohost/helpers
 
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+
 domain=$(ynh_app_setting_get $app domain)
-path=$(ynh_app_setting_get $app path)
+path_url=$(ynh_app_setting_get $app path)
 final_path=$(ynh_app_setting_get $app final_path)
 
-if [ -d $final_path ]; then
-    ynh_die "There is already a directory: $final_path"
-fi
+#=================================================
+# CHECK IF THE APP CAN BE RESTORED
+#=================================================
 
-# The parameter $1 is the uncompressed restore directory location
-backup_dir=$1/apps/$app
+sudo yunohost app checkurl "${domain}${path_url}" -a "$app" \
+	|| ynh_die "Path not available: ${domain}${path_url}"
+test ! -d $final_path \
+	|| ynh_die "There is already a directory: $final_path "
 
-# Restore Nginx
+#=================================================
+# STANDARD RESTORE STEPS
+#=================================================
+# RESTORE OF THE NGINX CONFIGURATION
+#=================================================
+
 conf=/etc/nginx/conf.d/$domain.d/$app.conf
 if [ -f $conf ]; then
-    ynh_die "There is already a nginx conf file at this path: $conf"
+	ynh_die "There is already a nginx conf file at this path: $conf"
 fi
-sudo cp -a $backup_dir/nginx.conf $conf
+sudo cp -a ./nginx.conf $conf
 
-# Restore YunoHost parameters
-sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
+# Reload webserver
+sudo systemctl reload nginx
 
-echo "Reinstall dependencies..."
+#=================================================
+# SPECIFIC RESTORE
+#=================================================
+# REINSTALL DEPENDENCIES
+#=================================================
+
 wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 
-sudo apt-get update
-sudo apt-get install default-jre-headless -y
-sudo apt-get install jenkins -y
+ynh_install_app_dependencies default-jre-headless jenkins
 
-# Restore sources & data
-sudo cp -a "$backup_dir/sources/." $final_path
+#=================================================
+# RESTORE OF THE MAIN DIR OF THE APP
+#=================================================
 
-# Restauration de la configuration de démarrage de Jenkins
-sudo cp -a $backup_dir/etc /etc/default/$app
+sudo cp -a ./sources/. $final_path
 
-sudo service $app restart	# Redémarre jenkins pour prendre en compte les modifications
+#=================================================
+# RESTORE OF THE JENKINS' BOOT CONFIG
+#=================================================
+
+sudo cp -a ./etc /etc/default/$app
+
+#=================================================
+# START JENKINS IN BACKGROUND
+#=================================================
+
+sudo systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
 tempfile="$(mktemp)"
 tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
 PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
 
-# Ajoute le service au monitoring de Yunohost.
+#=================================================
+# ENABLE SERVICE IN ADMIN PANEL
+#=================================================
+
 sudo yunohost service add $app --log "/var/log/$app/$app.log"
 
-# Reload webserver
-sudo service nginx reload
+#=================================================
+# CHECK JENKINS STARTING
+#=================================================
 
 # Surveille le démarrage du service.
 for i in `seq 1 120`
 do	# La boucle attend le démarrage de jenkins Ou 120 secondes.
 	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile"; then
-		echo "Le service $app a démarré correctement." >&2
+		WARNING echo "Le service $app a démarré correctement."
 		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
 	fi
-	echo -n "." >&2
+	WARNING echo -n "."
 	sleep 1
 done
-kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
+SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
 sudo rm "$tempfile"

@@ -1,12 +1,23 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-CLEAN_SETUP () {
+source .fonctions
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
+
+ynh_clean_setup () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
 	if test -n "$PID_TAIL"
 	then
-		kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
+		SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
 		sudo rm -f "$tempfile"
 	fi
 
@@ -15,85 +26,112 @@ CLEAN_SETUP () {
 
 	echo ""
 }
-TRAP_ON	# Active trap pour arrêter le script si une erreur est détectée.
+ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
 
-# Retrieve arguments
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
+
 domain=$YNH_APP_ARG_DOMAIN
-path=$YNH_APP_ARG_PATH
+path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
-# Source app helpers
-source /usr/share/yunohost/helpers
+#=================================================
+# CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
+#=================================================
 
-# Vérifie que les variables ne sont pas vides.
-CHECK_VAR "$app" "app name not set"
-
-
-CHECK_PATH	# Vérifie et corrige la syntaxe du path.
+path_url=$(ynh_normalize_url_path $path_url)	# Vérifie et corrige la syntaxe du path.
 CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
 
 # Vérifie que le dossier de destination n'est pas déjà utilisé.
 final_path=/var/lib/$app
-if [ -e "$final_path" ]
-then
-	echo "This path already contains a folder" >&2
-	false
-fi
+test -e "$final_path" && ynh_die "This path already contains a folder"
 
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
 
-FIND_PORT 8080	# Cherche un port libre.
-
-
-# Enregistre les infos dans la config YunoHost
 ynh_app_setting_set $app domain $domain
-ynh_app_setting_set $app path $path
+ynh_app_setting_set $app path $path_url
 ynh_app_setting_set $app is_public $is_public
-ynh_app_setting_set $app port $port
 ynh_app_setting_set $app final_path $final_path
 
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# FIND AND OPEN A PORT
+#=================================================
 
-echo "Install dependencies..."
+port=$(ynh_find_port 8080)	# Cherche un port libre.
+ynh_app_setting_set $app port $port
+
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+
 wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 
-sudo apt-get update
-sudo apt-get install default-jre-headless -y
-sudo apt-get install jenkins -y
+ynh_install_app_dependencies default-jre-headless jenkins
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+
+# Copie le fichier de config nginx
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+# Et modifie les variables dans le fichier de configuration nginx
+sudo sed -i "s@__PATH__@$path_url@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
+sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
+
+#=================================================
+# SPECIFIC SETUP
+#=================================================
+# SETUP JENKINS
+#=================================================
 
 # Renseigne le port
 sudo sed -i "s/^HTTP_PORT=.*/HTTP_PORT=$port/g" /etc/default/jenkins
 # Ignore le Setup Wizard
 sudo sed -i "s/-Djava.awt.headless=true/& -Djenkins.install.runSetupWizard=false/g" /etc/default/jenkins
 
-if [ "$path" != "/" ];
+if [ "$path_url" != "/" ];
 then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
-  sudo sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path@g" /etc/default/jenkins
+	sudo sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
 fi
 
-sudo service $app restart	# Redémarre jenkins pour prendre en compte les modifications
+#=================================================
+# START JENKINS IN BACKGROUND
+#=================================================
+
+sudo systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
 tempfile="$(mktemp)"
 tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
 PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
 
-# Copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-# Et modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATH__@$path@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
+#=================================================
+# FORCE PUBLIC ACCESS
+#=================================================
 
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-sudo service nginx reload
+sudo systemctl reload nginx
 sudo yunohost app ssowatconf
 
-# Ajoute le service au monitoring de Yunohost.
-sudo yunohost service add $app -l /var/log/$app/$app.log
+#=================================================
+# ENABLE SERVICE IN ADMIN PANEL
+#=================================================
 
-# Surveille le démarrage du service.
+sudo yunohost service add $app --log /var/log/$app/$app.log
+
+#=================================================
+# CHECK JENKINS STARTING
+#=================================================
+
 config_OK=0
 timeout=3600
 echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
@@ -101,74 +139,81 @@ for i in `seq 1 $timeout`
 do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur arm est trèèèèèèèèès long...).
 	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
 		# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
-		sudo wget -nv --no-check-certificate https://$domain$path/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
-		echo "" >&2
+		sudo wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+		WARNING echo ""
 		for i in `seq 1 $timeout`
 		do	# La boucle attend la mise à jour des dépôts de plugins.
 			if test -e /var/lib/jenkins/updates/default.json; then
 				break;
 			else
-				echo -n "." >&2
+				WARNING echo -n "."
 				sleep 1
 			fi
 		done
 
 		# Installation du plugin pour l'authentification ldap et http auth
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin reverse-proxy-auth-plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin reverse-proxy-auth-plugin
 
 		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin cloudbees-folder	# Folders Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin pam-auth	# PAM Authentication plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin mailer	# Mailer Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin ldap	# LDAP Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin build-timeout	# Build timeout plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin credentials-binding	# Credentials Binding Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin timestamper	# Timestamper
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin ws-cleanup	# Workspace Cleanup Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin ant	# Ant Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin gradle	# Gradle Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin workflow-aggregator	# Pipeline
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin git	# Git plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin github-organization-folder	# GitHub Organization Folder Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin subversion	# Subversion Plug-in
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin email-ext	# Email Extension Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin ssh-slaves	# SSH Slaves plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin cloudbees-folder	# Folders Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin pam-auth	# PAM Authentication plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin mailer	# Mailer Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ldap	# LDAP Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin build-timeout	# Build timeout plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin credentials-binding	# Credentials Binding Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin timestamper	# Timestamper
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ws-cleanup	# Workspace Cleanup Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ant	# Ant Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin gradle	# Gradle Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin workflow-aggregator	# Pipeline
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin git	# Git plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin github-organization-folder	# GitHub Organization Folder Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin subversion	# Subversion Plug-in
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin email-ext	# Email Extension Plugin
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ssh-slaves	# SSH Slaves plugin
 
 		# Installation de plugins supplémentaires pour le confort
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
+		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
 
 		# Configure la sécurité globale avec ldap par défaut.
 		sudo cp ../conf/config.xml /var/lib/jenkins/
 		sudo chown jenkins: /var/lib/jenkins/config.xml
 
-		sudo service $app restart	# Puis redémarre à nouveau le service.
+		sudo systemctl restart $app	# Puis redémarre à nouveau le service.
 		cat /dev/null > "$tempfile"	# Purge le log de suivi du démarrage.
- 		config_OK=1
+		config_OK=1
 		i=1;
 	fi
 	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 1 ]; then
-		echo "Le service $app a démarré correctement." >&2
+		WARNING echo "Le service $app a démarré correctement."
 		break	# Si le log annonce une deuxième fois le démarrage de jenkins, sort de la boucle.
 	fi
-	echo -n "." >&2
+	WARNING echo -n "."
 	sleep 1
 done
-kill -s 15 $PID_TAIL > /dev/null	# Arrête l'exécution de tail.
+SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
 sudo rm "$tempfile"
 if [ "$i" -ge $timeout ]; then
-	echo -e "\nLe service $app n'a pas démarré dans le temps imparti." >&2; false
+	ynh_die "\nLe service $app n'a pas démarré dans le temps imparti."
 fi
 
+#=================================================
+# SETUP SSOWAT
+#=================================================
+
 # Si Jenkins est privé, retire l'autorisation publique.
-if [ "$is_public" = "No" ];
+if [ $is_public -eq 0 ]
 then	# Retire l'accès public
 	ynh_app_setting_delete $app unprotected_uris
 	ynh_app_setting_set $app skipped_uris "/github-webhook"	# /path/github-webhook doit rester accessible pour les webhooks de github.
 fi
 
-# Clean hosts
+#=================================================
+# CLEAN HOSTS FILE
+#=================================================
+
 sudo sed -i '/#jenkins/d' /etc/hosts
