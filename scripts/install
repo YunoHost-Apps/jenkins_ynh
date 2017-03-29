@@ -135,6 +135,9 @@ sudo yunohost service add $app --log /var/log/$app/$app.log
 config_OK=0
 timeout=3600
 echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
+
+jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -s http://$domain$path_url"
+
 for i in `seq 1 $timeout`
 do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur arm est trèèèèèèèèès long...).
 	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
@@ -152,32 +155,32 @@ do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur ar
 		done
 
 		# Installation du plugin pour l'authentification ldap et http auth
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin reverse-proxy-auth-plugin
+		$jenkins_cli install-plugin reverse-proxy-auth-plugin
 
 		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin cloudbees-folder	# Folders Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin pam-auth	# PAM Authentication plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin mailer	# Mailer Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ldap	# LDAP Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin build-timeout	# Build timeout plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin credentials-binding	# Credentials Binding Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin timestamper	# Timestamper
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ws-cleanup	# Workspace Cleanup Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ant	# Ant Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin gradle	# Gradle Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin workflow-aggregator	# Pipeline
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin git	# Git plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin github-organization-folder	# GitHub Organization Folder Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin subversion	# Subversion Plug-in
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin email-ext	# Email Extension Plugin
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ssh-slaves	# SSH Slaves plugin
+		$jenkins_cli install-plugin cloudbees-folder	# Folders Plugin
+		$jenkins_cli install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+		$jenkins_cli install-plugin pam-auth	# PAM Authentication plugin
+		$jenkins_cli install-plugin mailer	# Mailer Plugin
+		$jenkins_cli install-plugin ldap	# LDAP Plugin
+		$jenkins_cli install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
+		$jenkins_cli install-plugin build-timeout	# Build timeout plugin
+		$jenkins_cli install-plugin credentials-binding	# Credentials Binding Plugin
+		$jenkins_cli install-plugin timestamper	# Timestamper
+		$jenkins_cli install-plugin ws-cleanup	# Workspace Cleanup Plugin
+		$jenkins_cli install-plugin ant	# Ant Plugin
+		$jenkins_cli install-plugin gradle	# Gradle Plugin
+		$jenkins_cli install-plugin workflow-aggregator	# Pipeline
+		$jenkins_cli install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
+		$jenkins_cli install-plugin git	# Git plugin
+		$jenkins_cli install-plugin github-organization-folder	# GitHub Organization Folder Plugin
+		$jenkins_cli install-plugin subversion	# Subversion Plug-in
+		$jenkins_cli install-plugin email-ext	# Email Extension Plugin
+		$jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
 
 		# Installation de plugins supplémentaires pour le confort
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
-		java -jar /var/lib/jenkins/jenkins-cli.jar -noCertificateCheck -s https://$domain$path_url install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
+		$jenkins_cli install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
+		$jenkins_cli install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
 
 		# Configure la sécurité globale avec ldap par défaut.
 		sudo cp ../conf/config.xml /var/lib/jenkins/
