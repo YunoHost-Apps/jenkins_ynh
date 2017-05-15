@@ -46,11 +46,7 @@ test ! -d $final_path \
 # RESTORE OF THE NGINX CONFIGURATION
 #=================================================
 
-conf=/etc/nginx/conf.d/$domain.d/$app.conf
-if [ -f $conf ]; then
-	ynh_die "There is already a nginx conf file at this path: $conf"
-fi
-sudo cp -a ./nginx.conf $conf
+ynh_restore_file nginx.conf
 
 # Reload webserver
 sudo systemctl reload nginx
@@ -64,19 +60,41 @@ sudo systemctl reload nginx
 wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 
-ynh_install_app_dependencies default-jre-headless jenkins
+ynh_install_app_dependencies default-jre-headless
+
+#=================================================
+# FIX THE PORT TO USE
+#=================================================
+
+change_port() {
+	# Wait for the creation of the jenkins service file
+	while [ ! -e /etc/default/jenkins ]
+	do
+		sleep 0.5
+	done
+	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
+	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
+}
+change_port &
+
+#=================================================
+# INSTALL JENKINS
+#=================================================
+
+ynh_package_install jenkins
 
 #=================================================
 # RESTORE OF THE MAIN DIR OF THE APP
 #=================================================
 
-sudo cp -a ./sources/. $final_path
+ynh_restore_file sources
 
 #=================================================
 # RESTORE OF THE JENKINS' BOOT CONFIG
 #=================================================
 
-sudo cp -a ./etc /etc/default/$app
+ynh_secure_remove "/etc/default/jenkins"
+ynh_restore_file etc
 
 #=================================================
 # START JENKINS IN BACKGROUND
@@ -108,4 +126,4 @@ do	# La boucle attend le démarrage de jenkins Ou 120 secondes.
 	sleep 1
 done
 SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-sudo rm "$tempfile"
+ynh_secure_remove "$tempfile"

@@ -33,22 +33,17 @@ fi
 # REMOVE DEPENDENCIES
 #=================================================
 
+ynh_apt purge jenkins
 ynh_remove_app_dependencies
 
-sudo rm /etc/apt/sources.list.d/jenkins.list
+ynh_secure_remove /etc/apt/sources.list.d/jenkins.list
 # Récupère l'id de la clé APT de jenkins
 apt_key=$(sudo apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)
 sudo apt-key del $apt_key	# Supprime la clé APT
 sudo apt-get update
 
 #=================================================
-# REMOVE THE MAIN DIR OF THE APP
-#=================================================
-
-SECURE_REMOVE '/var/lib/$app'	# Suppression du dossier de l'application, si il y a des
-
-#=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
 
-REMOVE_NGINX_CONF	# Suppression de la configuration nginx résidus.
+ynh_remove_nginx_config	# Suppression de la configuration nginx résidus.

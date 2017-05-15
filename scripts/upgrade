@@ -47,12 +47,7 @@ ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est dét
 # NGINX CONFIGURATION
 #=================================================
 
-# Copie le fichier de config nginx
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-# Et modifie les variables dans le fichier de configuration nginx
-sudo sed -i "s@__PATH__@$path_url@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__DOMAIN__@$domain@g" /etc/nginx/conf.d/$domain.d/$app.conf
-sudo sed -i "s@__PORT__@$port@g" /etc/nginx/conf.d/$domain.d/$app.conf
+ynh_nginx_config
 
 #=================================================
 # SETUP SSOWAT
