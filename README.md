@@ -13,3 +13,8 @@ Le script installe les paquets *ca-certificates-java*, *daemon*, *default-jre-he
 sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh
 
 **Multi-utilisateur:** Oui, avec support ldap.
+
+**Voir l'état du package:**  
+*[Dernier rapport hebdomadaire](https://forum.yunohost.org/t/rapport-hebdomadaire-dintegration-continue/2297)*  
+*[Dernier test d'intégration continue](https://ci-apps.yunohost.org/jenkins/job/jenkins%20%28Community%29/lastBuild/consoleFull)*  
+**Cette application est déconseillé sur architecture ARM. Son fonctionnement est fortement ralenti.**

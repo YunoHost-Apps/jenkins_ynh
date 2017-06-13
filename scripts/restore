@@ -47,7 +47,7 @@ test ! -d $final_path \
 # RESTORE OF THE NGINX CONFIGURATION
 #=================================================
 
-ynh_restore_file nginx.conf
+ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 # Reload webserver
 sudo systemctl reload nginx
@@ -88,14 +88,14 @@ ynh_package_install jenkins
 # RESTORE OF THE MAIN DIR OF THE APP
 #=================================================
 
-ynh_restore_file sources
+ynh_restore_file "$final_path"
 
 #=================================================
 # RESTORE OF THE JENKINS' BOOT CONFIG
 #=================================================
 
 ynh_secure_remove "/etc/default/jenkins"
-ynh_restore_file etc
+ynh_restore_file /etc/default/$app
 
 #=================================================
 # START JENKINS IN BACKGROUND

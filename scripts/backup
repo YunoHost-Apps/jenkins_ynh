@@ -37,13 +37,13 @@ domain=$(ynh_app_setting_get $app domain)
 #=================================================
 
 CHECK_SIZE "$final_path"
-ynh_backup_abstract "$final_path" "sources"
+ynh_backup "$final_path" "${YNH_APP_BACKUP_DIR}$final_path"
 
 #=================================================
 # BACKUP OF THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup_abstract "/etc/nginx/conf.d/$domain.d/$app.conf" "nginx.conf"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${YNH_APP_BACKUP_DIR}/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # SPECIFIC BACKUP
@@ -51,4 +51,4 @@ ynh_backup_abstract "/etc/nginx/conf.d/$domain.d/$app.conf" "nginx.conf"
 # BACKUP OF THE JENKINS' BOOT CONFIG
 #=================================================
 
-ynh_backup_abstract /etc/default/$app etc
+ynh_backup /etc/default/$app "${YNH_APP_BACKUP_DIR}/etc/default/$app"
