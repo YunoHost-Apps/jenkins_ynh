@@ -2,19 +2,19 @@
 	"name": "Jenkins",
 	"id": "jenkins",
 	"packaging_format": 1,
-	"requirements": {
-		"yunohost": ">= 2.4"
-	},
 	"description": {
 		"en": "Extendable continuous integration server",
 		"fr": "Serveur d'intégration continue extensible"
 	},
-	"version": "1.0",
+	"version": "2.46.3",
 	"url": "https://jenkins.io/index.html",
 	"license": "MIT",
 	"maintainer": {
 		"name": "Julien Malik et Maniack Crudelis",
 		"email": "maniackc_dev@crudelis.fr"
+	},
+	"requirements": {
+        "yunohost": ">= 2.7.2"
 	},
 	"multi_instance": false,
 	"services": [

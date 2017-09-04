@@ -8,6 +8,8 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+# Load common variables for all scripts.
+source _variables
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -18,11 +20,12 @@ ynh_clean_setup () {
 	if test -n "$PID_TAIL"
 	then
 		SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
+		SUPPRESS_WARNING kill -s 15 $pid_change_port	# Arrête l'exécution de change_port
 		ynh_secure_remove "$tempfile"
 	fi
 
 	# Clean hosts
-	sudo sed -i '/#jenkins/d' /etc/hosts
+	sed -i '/#jenkins/d' /etc/hosts
 
 	echo ""
 }
@@ -42,12 +45,16 @@ app=$YNH_APP_INSTANCE_NAME
 # CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
 #=================================================
 
-path_url=$(ynh_normalize_url_path $path_url)	# Vérifie et corrige la syntaxe du path.
-CHECK_DOMAINPATH	# Vérifie la disponibilité du path et du domaine.
-
-# Vérifie que le dossier de destination n'est pas déjà utilisé.
 final_path=/var/lib/$app
-test -e "$final_path" && ynh_die "This path already contains a folder"
+test ! -e "$final_path" || ynh_die "This path already contains a folder"
+
+# Normalize the url path syntax
+path_url=$(ynh_normalize_url_path $path_url)
+
+# Check web path availability
+ynh_webpath_available $domain $path_url
+# Register (book) web path
+ynh_webpath_register $app $domain $path_url
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
@@ -71,16 +78,13 @@ ynh_app_setting_set $app port $port
 # INSTALL DEPENDENCIES
 #=================================================
 
-wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
-sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-
-ynh_install_app_dependencies default-jre-headless
+ynh_install_app_dependencies $app_depencencies
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
 
-ynh_nginx_config
+ynh_add_nginx_config
 
 #=================================================
 # SPECIFIC SETUP
@@ -98,12 +102,14 @@ change_port() {
 	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
 }
 change_port &
+pid_change_port=$!
 
 #=================================================
 # INSTALL JENKINS
 #=================================================
 
-ynh_package_install jenkins
+wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${version}_all.deb
+dpkg --install jenkins_${version}_all.deb
 
 #=================================================
 # SETUP JENKINS
@@ -114,14 +120,14 @@ ynh_replace_string "-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizar
 
 if [ "$path_url" != "/" ];
 then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
-	sudo sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
+	sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
 fi
 
 #=================================================
 # START JENKINS IN BACKGROUND
 #=================================================
 
-sudo systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
+systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
 tempfile="$(mktemp)"
 tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
 PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
@@ -133,14 +139,14 @@ PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-sudo systemctl reload nginx
-sudo yunohost app ssowatconf
+systemctl reload nginx
+yunohost app ssowatconf
 
 #=================================================
 # ENABLE SERVICE IN ADMIN PANEL
 #=================================================
 
-sudo yunohost service add $app --log /var/log/$app/$app.log
+yunohost service add $app --log /var/log/$app/$app.log
 
 #=================================================
 # CHECK JENKINS STARTING
@@ -148,7 +154,7 @@ sudo yunohost service add $app --log /var/log/$app/$app.log
 
 config_OK=0
 timeout=3600
-echo "127.0.0.1 $domain #jenkins" | sudo tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
+echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
 
 jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
@@ -156,7 +162,7 @@ for i in `seq 1 $timeout`
 do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur arm est trèèèèèèèèès long...).
 	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
 		# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
-		sudo wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+		wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 		WARNING echo ""
 		for i in `seq 1 $timeout`
 		do	# La boucle attend la mise à jour des dépôts de plugins.
@@ -197,10 +203,10 @@ do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur ar
 		$jenkins_cli install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
 
 		# Configure la sécurité globale avec ldap par défaut.
-		sudo cp ../conf/config.xml /var/lib/jenkins/
-		sudo chown jenkins: /var/lib/jenkins/config.xml
+		cp ../conf/config.xml /var/lib/jenkins/
+		chown jenkins: /var/lib/jenkins/config.xml
 
-		sudo systemctl restart $app	# Puis redémarre à nouveau le service.
+		systemctl restart $app	# Puis redémarre à nouveau le service.
 		cat /dev/null > "$tempfile"	# Purge le log de suivi du démarrage.
 		config_OK=1
 		i=1;
@@ -233,4 +239,4 @@ fi
 # CLEAN HOSTS FILE
 #=================================================
 
-sudo sed -i '/#jenkins/d' /etc/hosts
+sed -i '/#jenkins/d' /etc/hosts
