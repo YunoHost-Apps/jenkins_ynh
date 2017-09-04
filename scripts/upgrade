@@ -8,6 +8,8 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+# Load common variables for all scripts.
+source _variables
 
 #=================================================
 # LOAD SETTINGS
@@ -33,15 +35,34 @@ elif [ "$is_public" = "No" ]; then
 	is_public=0
 fi
 
+# Remove the apt list entry for jenkins
+if [ -e "/etc/apt/sources.list.d/jenkins.list" ]
+then
+	ynh_secure_remove /etc/apt/sources.list.d/jenkins.list
+	# Récupère l'id de la clé APT de jenkins
+	apt_key=$(apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)
+	apt-key del $apt_key	# Supprime la clé APT
+	apt-get update
+fi
+
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 
 BACKUP_BEFORE_UPGRADE	# Backup the current version of the app
 ynh_clean_setup () {
+	SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
+	ynh_secure_remove "$tempfile"
 	BACKUP_FAIL_UPGRADE	# restore it if the upgrade fails
 }
 ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+
+#=================================================
+# UPGRADE JENKINS
+#=================================================
+
+wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${version}_all.deb
+dpkg --install jenkins_${version}_all.deb
 
 #=================================================
 # FIX JENKINS SETUP
@@ -51,7 +72,7 @@ if [ "$path_url" != "/" ];
 then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
 	if ! grep --quiet "prefix=$path_url" /etc/default/jenkins
 	then
-		sudo sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
+		sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
 	fi
 fi
 
@@ -59,7 +80,18 @@ fi
 # NGINX CONFIGURATION
 #=================================================
 
-ynh_nginx_config
+ynh_add_nginx_config
+
+#=================================================
+# START JENKINS IN BACKGROUND
+#=================================================
+
+# Démarre jenkins
+WARNING echo "Redémarrage de jenkins"
+tempfile="$(mktemp)"
+tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
+PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
+systemctl restart $app
 
 #=================================================
 # SETUP SSOWAT
@@ -76,4 +108,21 @@ fi
 # RELOAD NGINX
 #=================================================
 
-sudo systemctl reload nginx
+systemctl reload nginx
+
+#=================================================
+# CHECK JENKINS STARTING
+#=================================================
+
+for i in `seq 1 300`
+do	# La boucle attend le démarrage de jenkins ou 5 minutes
+	if grep -q "Jenkins is fully up and running" "$tempfile"; then
+		WARNING echo "Le service $app a démarré correctement."
+		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
+	fi
+	WARNING echo -n "."
+	sleep 1
+done
+echo ""
+QUIET kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
+ynh_secure_remove "$tempfile"
