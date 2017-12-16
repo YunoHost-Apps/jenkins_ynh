@@ -10,6 +10,7 @@ source _common.sh
 source /usr/share/yunohost/helpers
 # Load common variables for all scripts.
 source _variables
+source _sed
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -17,17 +18,11 @@ source _variables
 
 ynh_clean_setup () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
-	if test -n "$PID_TAIL"
-	then
-		SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-		SUPPRESS_WARNING kill -s 15 $pid_change_port	# Arrête l'exécution de change_port
-		ynh_secure_remove "$tempfile"
-	fi
+	ynh_clean_check_starting
+	ynh_exec_warn_less kill -s 15 $pid_change_port	# Arrête l'exécution de change_port
 
 	# Clean hosts
 	sed -i '/#jenkins/d' /etc/hosts
-
-	echo ""
 }
 ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
 
@@ -124,15 +119,6 @@ then	# Ajoute le path en cas d'installation en sous-dossier dans les options de 
 fi
 
 #=================================================
-# START JENKINS IN BACKGROUND
-#=================================================
-
-systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
-tempfile="$(mktemp)"
-tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
-PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
-
-#=================================================
 # FORCE PUBLIC ACCESS
 #=================================================
 
@@ -158,71 +144,55 @@ echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts	# Renseigne le domain dans
 
 jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
+# Wait for Jenkins fully started
+ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "$timeout"
+
+# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
+wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 for i in `seq 1 $timeout`
-do	# La boucle attend le démarrage de jenkins Ou $timeout (Le démarrage sur arm est trèèèèèèèèès long...).
-	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 0 ]; then
-		# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
-		wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
-		WARNING echo ""
-		for i in `seq 1 $timeout`
-		do	# La boucle attend la mise à jour des dépôts de plugins.
-			if test -e /var/lib/jenkins/updates/default.json; then
-				break;
-			else
-				WARNING echo -n "."
-				sleep 1
-			fi
-		done
-
-		# Installation du plugin pour l'authentification ldap et http auth
-		$jenkins_cli install-plugin reverse-proxy-auth-plugin
-
-		# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
-		$jenkins_cli install-plugin cloudbees-folder	# Folders Plugin
-		$jenkins_cli install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
-		$jenkins_cli install-plugin pam-auth	# PAM Authentication plugin
-		$jenkins_cli install-plugin mailer	# Mailer Plugin
-		$jenkins_cli install-plugin ldap	# LDAP Plugin
-		$jenkins_cli install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
-		$jenkins_cli install-plugin build-timeout	# Build timeout plugin
-		$jenkins_cli install-plugin credentials-binding	# Credentials Binding Plugin
-		$jenkins_cli install-plugin timestamper	# Timestamper
-		$jenkins_cli install-plugin ws-cleanup	# Workspace Cleanup Plugin
-		$jenkins_cli install-plugin ant	# Ant Plugin
-		$jenkins_cli install-plugin gradle	# Gradle Plugin
-		$jenkins_cli install-plugin workflow-aggregator	# Pipeline
-		$jenkins_cli install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
-		$jenkins_cli install-plugin git	# Git plugin
-		$jenkins_cli install-plugin github-organization-folder	# GitHub Organization Folder Plugin
-		$jenkins_cli install-plugin subversion	# Subversion Plug-in
-		$jenkins_cli install-plugin email-ext	# Email Extension Plugin
-		$jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
-
-		# Installation de plugins supplémentaires pour le confort
-		$jenkins_cli install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
-		$jenkins_cli install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
-
-		# Configure la sécurité globale avec ldap par défaut.
-		cp ../conf/config.xml /var/lib/jenkins/
-		chown jenkins: /var/lib/jenkins/config.xml
-
-		systemctl restart $app	# Puis redémarre à nouveau le service.
-		cat /dev/null > "$tempfile"	# Purge le log de suivi du démarrage.
-		config_OK=1
-		i=1;
+do	# La boucle attend la mise à jour des dépôts de plugins.
+	if test -e /var/lib/jenkins/updates/default.json; then
+		break;
+	else
+		echo -n "."
+		sleep 1
 	fi
-	if grep -q "Jenkins is fully up and running" "$tempfile" && [ "$config_OK" -eq 1 ]; then
-		WARNING echo "Le service $app a démarré correctement."
-		break	# Si le log annonce une deuxième fois le démarrage de jenkins, sort de la boucle.
-	fi
-	WARNING echo -n "."
-	sleep 1
 done
-SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-ynh_secure_remove "$tempfile"
-if [ "$i" -ge $timeout ]; then
-	ynh_die "\nLe service $app n'a pas démarré dans le temps imparti."
-fi
+
+# Installation du plugin pour l'authentification ldap et http auth
+$jenkins_cli install-plugin reverse-proxy-auth-plugin
+
+# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
+$jenkins_cli install-plugin cloudbees-folder	# Folders Plugin
+$jenkins_cli install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+$jenkins_cli install-plugin pam-auth	# PAM Authentication plugin
+$jenkins_cli install-plugin mailer	# Mailer Plugin
+$jenkins_cli install-plugin ldap	# LDAP Plugin
+$jenkins_cli install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
+$jenkins_cli install-plugin build-timeout	# Build timeout plugin
+$jenkins_cli install-plugin credentials-binding	# Credentials Binding Plugin
+$jenkins_cli install-plugin timestamper	# Timestamper
+$jenkins_cli install-plugin ws-cleanup	# Workspace Cleanup Plugin
+$jenkins_cli install-plugin ant	# Ant Plugin
+$jenkins_cli install-plugin gradle	# Gradle Plugin
+$jenkins_cli install-plugin workflow-aggregator	# Pipeline
+$jenkins_cli install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
+$jenkins_cli install-plugin git	# Git plugin
+$jenkins_cli install-plugin github-organization-folder	# GitHub Organization Folder Plugin
+$jenkins_cli install-plugin subversion	# Subversion Plug-in
+$jenkins_cli install-plugin email-ext	# Email Extension Plugin
+$jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
+
+# Installation de plugins supplémentaires pour le confort
+$jenkins_cli install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
+$jenkins_cli install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
+
+# Configure la sécurité globale avec ldap par défaut.
+cp ../conf/config.xml /var/lib/jenkins/
+chown jenkins: /var/lib/jenkins/config.xml
+
+# Wait for Jenkins fully started
+ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "$timeout"
 
 #=================================================
 # SETUP SSOWAT
@@ -240,3 +210,11 @@ fi
 #=================================================
 
 sed -i '/#jenkins/d' /etc/hosts
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+
+ynh_send_readme_to_admin "$message" "$admin root"

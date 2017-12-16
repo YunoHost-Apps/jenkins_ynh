@@ -51,8 +51,7 @@ fi
 #=================================================
 
 ynh_clean_setup () {
-	SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-	ynh_secure_remove "$tempfile"
+	ynh_clean_check_starting
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
@@ -122,31 +121,11 @@ fi
 # RESTART JENKINS IN BACKGROUND
 #=================================================
 
-WARNING echo "Redémarrage de jenkins"
-tempfile="$(mktemp)"
-tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
-PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
-systemctl restart $app
+# Wait for Jenkins fully started
+ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
 
 #=================================================
 # RELOAD NGINX
 #=================================================
 
 systemctl reload nginx
-
-#=================================================
-# CHECK JENKINS STARTING
-#=================================================
-
-for i in `seq 1 300`
-do	# La boucle attend le démarrage de jenkins ou 5 minutes
-	if grep -q "Jenkins is fully up and running" "$tempfile"; then
-		WARNING echo "Le service $app a démarré correctement."
-		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
-	fi
-	WARNING echo -n "."
-	sleep 1
-done
-echo ""
-QUIET kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-ynh_secure_remove "$tempfile"

@@ -25,7 +25,7 @@ domain=$(ynh_app_setting_get $app domain)
 
 if yunohost service status | grep -q $app	# Test l'existence du service dans Yunohost
 then
-	echo "Remove $app service"
+	ynh_print_info "Remove $app service" >&2
 	yunohost service remove $app
 fi
 

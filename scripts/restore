@@ -22,12 +22,7 @@ source ../settings/scripts/_variables
 
 ynh_clean_setup () {
 # Nettoyage des résidus d'installation non pris en charge par le script remove.
-	if test -n "$PID_TAIL"
-	then
-		SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-		SUPPRESS_WARNING kill -s 15 $pid_change_port	# Arrête l'exécution de change_port
-		ynh_secure_remove "$tempfile"
-	fi
+	ynh_clean_check_starting
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
@@ -47,7 +42,7 @@ port=$(ynh_app_setting_get $app port)
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
 
-yunohost app checkurl "${domain}${path_url}" -a "$app" \
+ynh_webpath_available $domain $path_url \
 	|| ynh_die "Path not available: ${domain}${path_url}"
 test ! -d $final_path \
 	|| ynh_die "There is already a directory: $final_path "
@@ -108,15 +103,6 @@ ynh_secure_remove "/etc/default/jenkins"
 ynh_restore_file /etc/default/$app
 
 #=================================================
-# START JENKINS IN BACKGROUND
-#=================================================
-
-systemctl restart $app	# Redémarre jenkins pour prendre en compte les modifications
-tempfile="$(mktemp)"
-tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
-PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
-
-#=================================================
 # ENABLE SERVICE IN ADMIN PANEL
 #=================================================
 
@@ -126,15 +112,13 @@ yunohost service add $app --log "/var/log/$app/$app.log"
 # CHECK JENKINS STARTING
 #=================================================
 
-# Surveille le démarrage du service.
-for i in `seq 1 120`
-do	# La boucle attend le démarrage de jenkins Ou 120 secondes.
-	if grep -q "INFOS: Jenkins is fully up and running" "$tempfile"; then
-		WARNING echo "Le service $app a démarré correctement."
-		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
-	fi
-	WARNING echo -n "."
-	sleep 1
-done
-SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-ynh_secure_remove "$tempfile"
+# Wait for Jenkins fully started
+ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+
+ynh_send_readme_to_admin "$message" "$admin root"
