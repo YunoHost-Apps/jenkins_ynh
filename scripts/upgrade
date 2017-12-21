@@ -69,8 +69,8 @@ ynh_abort_if_errors
 # UPGRADE JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${version}_all.deb
-dpkg --install jenkins_${version}_all.deb
+wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
+dpkg --install jenkins_${jenkins_version}_all.deb
 
 #=================================================
 # FIX JENKINS SETUP
