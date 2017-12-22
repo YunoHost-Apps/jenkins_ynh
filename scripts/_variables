@@ -4,4 +4,4 @@
 app_depencencies="default-jre-headless daemon"
 
 # Jenkins version
-version=2.46.3
+jenkins_version=2.46.3
