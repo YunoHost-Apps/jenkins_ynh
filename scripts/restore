@@ -121,4 +121,4 @@ ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "3
 
 message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
 
-ynh_send_readme_to_admin "$message" "$admin root"
+ynh_send_readme_to_admin "$message" "root"
