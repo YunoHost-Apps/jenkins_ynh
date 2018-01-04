@@ -35,6 +35,7 @@ fi
 
 ynh_apt purge jenkins
 ynh_remove_app_dependencies
+ynh_secure_remove "/var/lib/jenkins"
 
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
