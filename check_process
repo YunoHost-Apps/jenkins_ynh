@@ -11,7 +11,7 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1	from_commit=a1211123350ae50675d4f37074d2953939e55dff
+		upgrade=1	from_commit=f53f880595cf42304c4628d05f83afa55084d8f6
 		backup_restore=1
 		multi_instance=0
 		incorrect_path=1
@@ -34,6 +34,6 @@
 Email=
 Notification=down
 ;;; Upgrade options
-	; commit=a1211123350ae50675d4f37074d2953939e55dff
-		name=21 Dec 2017 a1211123350ae50675d4f37074d2953939e55dff
+	; commit=f53f880595cf42304c4628d05f83afa55084d8f6
+		name=24 Dec 2017 f53f880595cf42304c4628d05f83afa55084d8f6
 		manifest_arg=domain=DOMAIN&path=PATH&is_public=1&
