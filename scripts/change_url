@@ -128,4 +128,4 @@ ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "3
 # RELOAD NGINX
 #=================================================
 
-systemctl reload nginx
+ynh_system_reload nginx

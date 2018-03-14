@@ -56,7 +56,7 @@ test ! -d $final_path \
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 # Reload webserver
-systemctl reload nginx
+ynh_system_reload nginx
 
 #=================================================
 # SPECIFIC RESTORE
