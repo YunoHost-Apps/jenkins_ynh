@@ -125,7 +125,7 @@ fi
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-systemctl reload nginx
+ynh_system_reload nginx
 yunohost app ssowatconf
 
 #=================================================

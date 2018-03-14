@@ -39,7 +39,7 @@ domain=$(ynh_app_setting_get $app domain)
 # BACKUP OF THE MAIN DIR OF THE APP
 #=================================================
 
-systemctl stop jenkins
+ynh_system_reload jenkins stop
 sleep 1
 
 CHECK_SIZE "$final_path"
