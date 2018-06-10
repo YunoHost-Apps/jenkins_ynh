@@ -1,9 +1,11 @@
 # Jenkins pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20%28Community%29/lastBuild/consoleFull)  
+[![Niveau d'intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins)  
 [![Installer Jenkins avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Read this readme in english.](./README.md)*
+
+> **Ce package ne fonctionne plus sur debian Jessie, parce que la dernière version de jenkins qui fonctionne sur Jessie était la 2.46.3, mais les plugins ne sont plus disponibles pour cette version.**
 
 > *Ce package vous permet d'installer jenkins rapidement et simplement sur un serveur YunoHost.  
 Si vous n'avez pas YunoHost, merci de regarder [ici](https://yunohost.org/#/install_fr) pour savoir comment l'installer et en profiter.*
@@ -11,11 +13,15 @@ Si vous n'avez pas YunoHost, merci de regarder [ici](https://yunohost.org/#/inst
 ## Résumé
 Premier serveur d'automatisation open source, Jenkins fournit des centaines de plugins pour supporter la construction, le déploiement et l'automatisation de n'importe quel projet.
 
-**Version embarquée:** 2.46.3
+**Version embarquée:** 2.121.1
 
 ## Captures d'écran
 
 ![](https://crudelis.fr/lutim/w8DlycXB.png)
+
+## Démo
+
+Aucune démo pour cette application.
 
 ## Configuration
 
@@ -35,7 +41,7 @@ Supportée, avec LDAP et SSO.
 #### Architectures supportées.
 
 * x86-64b - [![Build Status](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/)
-* ARMv8-A - [![Build Status](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/badge/icon)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/) Vraiment trop lent sur architecture ARM. Vraiment pas recommandé de l'utiliser sur ARM.
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/badge/icon)](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/) Vraiment trop lent sur architecture ARM. Vraiment pas recommandé de l'utiliser sur ARM.
 
 ## Limitations
 
