@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Dependencies
-app_depencencies="default-jre-headless daemon"
+app_depencencies="default-jre-headless daemon net-tools"
 
 # Jenkins version
-jenkins_version=2.46.3
+jenkins_version=2.121.1
