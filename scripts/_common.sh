@@ -27,7 +27,8 @@ CHECK_SIZE () {	# Vérifie avant chaque backup que l'espace est suffisant
 #=================================================
 
 IS_PACKAGE_CHECK () {	# Détermine une exécution en conteneur (Non testé)
-	return $(uname -n | grep -c 'pchecker_lxc')
+# 	return $(uname -n | grep -c 'pchecker_lxc')
+	return $(env | grep -c container=lxc)
 }
 
 #=================================================

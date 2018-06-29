@@ -113,3 +113,9 @@ ynh_system_reload nginx
 
 # Wait for Jenkins fully started
 ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
+
+#=================================================
+# UPGRADE JENKINS-CLI.PHAR
+#=================================================
+
+wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
