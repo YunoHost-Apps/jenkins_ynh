@@ -6,12 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 # Load common variables for all scripts.
 source ../settings/scripts/_variables
@@ -48,6 +43,12 @@ test ! -d $final_path \
 	|| ynh_die "There is already a directory: $final_path "
 
 #=================================================
+# ACTIVATE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_ON
+
+#=================================================
 # STANDARD RESTORE STEPS
 #=================================================
 # RESTORE OF THE NGINX CONFIGURATION
@@ -56,7 +57,7 @@ test ! -d $final_path \
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 # Reload webserver
-ynh_system_reload nginx
+ynh_system_reload --service_name=nginx
 
 #=================================================
 # SPECIFIC RESTORE
@@ -113,7 +114,13 @@ yunohost service add $app --log "/var/log/$app/$app.log"
 #=================================================
 
 # Wait for Jenkins fully started
-ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
+ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_OFF
 
 #=================================================
 # SEND A README FOR THE ADMIN
@@ -121,4 +128,4 @@ ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "3
 
 message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
 
-ynh_send_readme_to_admin "$message" "root"
+ynh_send_readme_to_admin --app_message="$message" --recipients="root"

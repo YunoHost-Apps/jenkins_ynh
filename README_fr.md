@@ -42,6 +42,7 @@ Supportée, avec LDAP et SSO.
 
 * x86-64b - [![Build Status](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/)
 * ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/badge/icon)](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/) Vraiment trop lent sur architecture ARM. Vraiment pas recommandé de l'utiliser sur ARM.
+* Jessie x86-64b - [![Build Status](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/)
 
 ## Limitations
 

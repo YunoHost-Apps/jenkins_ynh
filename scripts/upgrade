@@ -27,10 +27,10 @@ port=$(ynh_app_setting_get $app port)
 # CHECK VERSION
 #=================================================
 
-ynh_abort_if_up_to_date
+upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
-# FIX OLD THINGS
+# ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 
 if [ "$is_public" = "Yes" ]; then
@@ -66,21 +66,30 @@ ynh_clean_setup () {
 ynh_abort_if_errors
 
 #=================================================
+# ACTIVATE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_ON
+
+#=================================================
 # UPGRADE JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-dpkg --install jenkins_${jenkins_version}_all.deb
+if [ "$upgrade_type" == "UPGRADE_APP" ]
+then
+	wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
+	dpkg --install jenkins_${jenkins_version}_all.deb
 
-#=================================================
-# FIX JENKINS SETUP
-#=================================================
+	#=================================================
+	# FIX JENKINS SETUP
+	#=================================================
 
-if [ "$path_url" != "/" ];
-then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
-	if ! grep --quiet "prefix=$path_url" /etc/default/jenkins
-	then
-		sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
+	if [ "$path_url" != "/" ];
+	then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
+		if ! grep --quiet "prefix=$path_url" /etc/default/jenkins
+		then
+			sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
+		fi
 	fi
 fi
 
@@ -105,17 +114,23 @@ fi
 # RELOAD NGINX
 #=================================================
 
-ynh_system_reload nginx
+ynh_system_reload --service_name=nginx
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
 
 # Wait for Jenkins fully started
-ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
+ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
 
 #=================================================
 # UPGRADE JENKINS-CLI.PHAR
 #=================================================
 
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+
+#=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+
+ynh_maintenance_mode_OFF
