@@ -10,7 +10,6 @@ source _common.sh
 source /usr/share/yunohost/helpers
 # Load common variables for all scripts.
 source _variables
-source _sed
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -125,7 +124,7 @@ fi
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-ynh_system_reload nginx
+ynh_system_reload --service_name=nginx
 yunohost app ssowatconf
 
 #=================================================
@@ -145,7 +144,8 @@ echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts	# Renseigne le domain dans
 jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
 # Wait for Jenkins fully started
-ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "$timeout"
+ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
+
 
 # Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
@@ -192,7 +192,7 @@ cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
 # Wait for Jenkins fully started
-ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "$timeout"
+ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT
@@ -217,4 +217,4 @@ sed -i '/#jenkins/d' /etc/hosts
 
 message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
 
-ynh_send_readme_to_admin "$message" "root"
+ynh_send_readme_to_admin --app_message="$message" --recipients="root"

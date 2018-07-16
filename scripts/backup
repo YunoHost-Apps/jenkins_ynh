@@ -6,12 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -39,7 +34,7 @@ domain=$(ynh_app_setting_get $app domain)
 # BACKUP OF THE MAIN DIR OF THE APP
 #=================================================
 
-ynh_system_reload jenkins stop
+ynh_system_reload --service_name=jenkins --action=stop
 sleep 1
 
 CHECK_SIZE "$final_path"
@@ -64,4 +59,4 @@ ynh_backup /etc/default/$app
 #=================================================
 
 # Wait for Jenkins fully started
-ynh_check_starting "Jenkins is fully up and running" "/var/log/$app/$app.log" "300"
+ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
