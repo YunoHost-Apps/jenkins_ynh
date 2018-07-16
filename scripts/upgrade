@@ -78,7 +78,7 @@ ynh_maintenance_mode_ON
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
 	wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-	dpkg --install jenkins_${jenkins_version}_all.deb
+	dpkg --install --force-confold jenkins_${jenkins_version}_all.deb
 
 	#=================================================
 	# FIX JENKINS SETUP
