@@ -22,6 +22,7 @@ domain=$(ynh_app_setting_get $app domain)
 path_url=$(ynh_app_setting_get $app path)
 is_public=$(ynh_app_setting_get $app is_public)
 port=$(ynh_app_setting_get $app port)
+overwrite_nginx=$(ynh_app_setting_get $app overwrite_nginx)
 
 #=================================================
 # CHECK VERSION
@@ -39,6 +40,12 @@ if [ "$is_public" = "Yes" ]; then
 elif [ "$is_public" = "No" ]; then
 	ynh_app_setting_set $app is_public 0
 	is_public=0
+fi
+
+# If overwrite_nginx doesn't exist, create it
+if [ -z "$overwrite_nginx" ]; then
+	overwrite_nginx=1
+	ynh_app_setting_set $app overwrite_nginx $overwrite_nginx
 fi
 
 # Remove the apt list entry for jenkins
@@ -97,7 +104,11 @@ fi
 # NGINX CONFIGURATION
 #=================================================
 
-ynh_add_nginx_config
+# Overwrite the nginx configuration only if it's allowed
+if [ $overwrite_nginx -eq 1 ]
+then
+	ynh_add_nginx_config
+fi
 
 #=================================================
 # SETUP SSOWAT
