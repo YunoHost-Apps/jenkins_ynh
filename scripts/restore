@@ -16,7 +16,7 @@ source ../settings/scripts/_variables
 #=================================================
 
 ynh_clean_setup () {
-# Nettoyage des résidus d'installation non pris en charge par le script remove.
+	# Clean installation remaining that are not handle by the remove script.
 	ynh_clean_check_starting
 }
 # Exit if an error occurs during the execution of the script
@@ -51,12 +51,12 @@ ynh_maintenance_mode_ON
 #=================================================
 # STANDARD RESTORE STEPS
 #=================================================
-# RESTORE OF THE NGINX CONFIGURATION
+# RESTORE THE NGINX CONFIGURATION
 #=================================================
 
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
-# Reload webserver
+# Reload nginx
 ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
@@ -87,24 +87,25 @@ pid_change_port=$!
 # INSTALL JENKINS
 #=================================================
 
+# Download jenkins deb file and install it.
 ynh_download_file --dest_dir="../conf"
 dpkg --install ../conf/jenkins.deb
 
 #=================================================
-# RESTORE OF THE MAIN DIR OF THE APP
+# RESTORE THE APP MAIN DIR
 #=================================================
 
 ynh_restore_file "$final_path"
 
 #=================================================
-# RESTORE OF THE JENKINS' BOOT CONFIG
+# RESTORE THE JENKINS' BOOT CONFIG
 #=================================================
 
 ynh_secure_remove "/etc/default/jenkins"
 ynh_restore_file /etc/default/$app
 
 #=================================================
-# ENABLE SERVICE IN ADMIN PANEL
+# ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
 yunohost service add $app --log "/var/log/$app/$app.log"
@@ -113,7 +114,7 @@ yunohost service add $app --log "/var/log/$app/$app.log"
 # CHECK JENKINS STARTING
 #=================================================
 
-# Wait for Jenkins fully started
+# Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
@@ -126,6 +127,6 @@ ynh_maintenance_mode_OFF
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
 
 ynh_send_readme_to_admin --app_message="$message" --recipients="root"

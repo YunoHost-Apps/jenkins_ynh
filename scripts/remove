@@ -20,10 +20,11 @@ domain=$(ynh_app_setting_get $app domain)
 #=================================================
 # STANDARD REMOVE
 #=================================================
-# DISABLE SERVICE IN ADMIN PANEL
+# REMOVE SERVICE FROM ADMIN PANEL
 #=================================================
 
-if yunohost service status | grep -q $app	# Test l'existence du service dans Yunohost
+# Check if the service is declared in YunoHost
+if yunohost service status | grep -q $app
 then
 	ynh_print_info "Remove $app service" >&2
 	yunohost service remove $app
@@ -34,6 +35,7 @@ fi
 #=================================================
 
 ynh_apt purge jenkins
+# Remove metapackage and its dependencies
 ynh_remove_app_dependencies
 ynh_secure_remove "/var/lib/jenkins"
 
@@ -41,4 +43,5 @@ ynh_secure_remove "/var/lib/jenkins"
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
 
-ynh_remove_nginx_config	# Suppression de la configuration nginx résidus.
+# Remove the dedicated nginx config
+ynh_remove_nginx_config

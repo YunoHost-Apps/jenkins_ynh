@@ -114,7 +114,7 @@ fi
 
 if [ $change_path -eq 1 ]
 then
-	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
+	# Add the path, in case of sub-path installation, into jenkins' boot options
 
 	# Change to root
 	if [ "$new_path" == "/" ]
@@ -135,7 +135,7 @@ fi
 # RESTART JENKINS IN BACKGROUND
 #=================================================
 
-# Wait for Jenkins fully started
+# Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="300"
 
 #=================================================
