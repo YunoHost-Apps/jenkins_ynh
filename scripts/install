@@ -45,8 +45,6 @@ test ! -e "$final_path" || ynh_die "This path already contains a folder"
 # Normalize the url path syntax
 path_url=$(ynh_normalize_url_path $path_url)
 
-# Check web path availability
-ynh_webpath_available $domain $path_url
 # Register (book) web path
 ynh_webpath_register $app $domain $path_url
 
@@ -103,8 +101,8 @@ pid_change_port=$!
 # INSTALL JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-dpkg --install jenkins_${jenkins_version}_all.deb
+ynh_download_file --dest_dir="../conf"
+dpkg --install ../conf/jenkins.deb
 
 #=================================================
 # SETUP JENKINS
@@ -125,7 +123,7 @@ fi
 # Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-ynh_system_reload --service_name=nginx
+ynh_systemd_action --action=reload --service_name=nginx
 yunohost app ssowatconf
 
 #=================================================
@@ -145,7 +143,7 @@ echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts	# Renseigne le domain dans
 jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
 # Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 
 # Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
@@ -193,7 +191,7 @@ cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
 # Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT

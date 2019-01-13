@@ -2,6 +2,3 @@
 
 # Dependencies
 app_depencencies="default-jre-headless daemon net-tools"
-
-# Jenkins version
-jenkins_version=2.121.1

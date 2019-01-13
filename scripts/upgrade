@@ -84,8 +84,8 @@ ynh_maintenance_mode_ON
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-	dpkg --install --force-confold jenkins_${jenkins_version}_all.deb
+	ynh_download_file --dest_dir="../conf"
+	dpkg --install ../conf/jenkins.deb
 
 	#=================================================
 	# FIX JENKINS SETUP
@@ -99,6 +99,12 @@ then
 		fi
 	fi
 fi
+
+#=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+
+ynh_install_app_dependencies $app_depencencies
 
 #=================================================
 # NGINX CONFIGURATION
@@ -125,14 +131,14 @@ fi
 # RELOAD NGINX
 #=================================================
 
-ynh_system_reload --service_name=nginx
+ynh_system_reload --action=reload --service_name=nginx
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
 
 # Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # UPGRADE JENKINS-CLI.PHAR

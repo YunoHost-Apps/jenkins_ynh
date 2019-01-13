@@ -57,7 +57,7 @@ ynh_maintenance_mode_ON
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 # Reload webserver
-ynh_system_reload --service_name=nginx
+ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # SPECIFIC RESTORE
@@ -87,8 +87,8 @@ pid_change_port=$!
 # INSTALL JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-dpkg --install jenkins_${jenkins_version}_all.deb
+ynh_download_file --dest_dir="../conf"
+dpkg --install ../conf/jenkins.deb
 
 #=================================================
 # RESTORE OF THE MAIN DIR OF THE APP
@@ -114,7 +114,7 @@ yunohost service add $app --log "/var/log/$app/$app.log"
 #=================================================
 
 # Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
