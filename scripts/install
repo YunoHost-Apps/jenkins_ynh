@@ -91,9 +91,15 @@ ynh_add_nginx_config
 
 change_port() {
 	# Wait for the creation of the jenkins service file
-	while [ ! -e /etc/default/jenkins ]
+	timeout=600
+	for j in `seq 1 $timeout`
 	do
-		sleep 0.5
+		# Wait for an update of plugin repositories
+		if test -e /etc/default/jenkins; then
+			break;
+		else
+			sleep 0.5
+		fi
 	done
 	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
 	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
@@ -107,7 +113,7 @@ pid_change_port=$!
 
 # Download jenkins deb file and install it.
 ynh_download_file --dest_dir="../conf"
-dpkg --install ../conf/jenkins.deb
+dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
 # SETUP JENKINS
@@ -147,7 +153,7 @@ timeout=3600
 # Add the domain to /etc/hosts, to prevent any dns delay
 echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
-jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -224,6 +230,12 @@ sed -i '/#jenkins/d' /etc/hosts
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+# Get main domain and buid the url of the admin panel of the app.
+admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="root"
+message="You can configure this app easily by using the experimental config-panel feature: $admin_panel/config-panel.
+You can also find some specific actions for this app by using the experimental action feature: $admin_panel/actions.
+
+If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+
+ynh_send_readme_to_admin --app_message="$message" --recipients="root" --type="install"
