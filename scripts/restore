@@ -16,8 +16,10 @@ source ../settings/scripts/_variables
 #=================================================
 
 ynh_clean_setup () {
-# Nettoyage des résidus d'installation non pris en charge par le script remove.
+	# Clean installation remaining that are not handle by the remove script.
 	ynh_clean_check_starting
+	# Stop change_port()
+	ynh_exec_warn_less kill -s 15 $pid_change_port
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
@@ -51,13 +53,13 @@ ynh_maintenance_mode_ON
 #=================================================
 # STANDARD RESTORE STEPS
 #=================================================
-# RESTORE OF THE NGINX CONFIGURATION
+# RESTORE THE NGINX CONFIGURATION
 #=================================================
 
 ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 
-# Reload webserver
-ynh_system_reload --service_name=nginx
+# Reload nginx
+ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # SPECIFIC RESTORE
@@ -73,9 +75,15 @@ ynh_install_app_dependencies $app_depencencies
 
 change_port() {
 	# Wait for the creation of the jenkins service file
-	while [ ! -e /etc/default/jenkins ]
+	timeout=600
+	for j in `seq 1 $timeout`
 	do
-		sleep 0.5
+		# Wait for an update of plugin repositories
+		if test -e /etc/default/jenkins; then
+			break;
+		else
+			sleep 0.5
+		fi
 	done
 	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
 	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
@@ -87,24 +95,25 @@ pid_change_port=$!
 # INSTALL JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-dpkg --install jenkins_${jenkins_version}_all.deb
+# Download jenkins deb file and install it.
+ynh_download_file --dest_dir="../conf"
+dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
-# RESTORE OF THE MAIN DIR OF THE APP
+# RESTORE THE APP MAIN DIR
 #=================================================
 
 ynh_restore_file "$final_path"
 
 #=================================================
-# RESTORE OF THE JENKINS' BOOT CONFIG
+# RESTORE THE JENKINS' BOOT CONFIG
 #=================================================
 
 ynh_secure_remove "/etc/default/jenkins"
 ynh_restore_file /etc/default/$app
 
 #=================================================
-# ENABLE SERVICE IN ADMIN PANEL
+# ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
 yunohost service add $app --log "/var/log/$app/$app.log"
@@ -113,8 +122,8 @@ yunohost service add $app --log "/var/log/$app/$app.log"
 # CHECK JENKINS STARTING
 #=================================================
 
-# Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
+# Wait for Jenkins to be fully started
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
@@ -126,6 +135,12 @@ ynh_maintenance_mode_OFF
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+# Get main domain and buid the url of the admin panel of the app.
+admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="root"
+message="You can configure this app easily by using the experimental config-panel feature: $admin_panel/config-panel.
+You can also find some specific actions for this app by using the experimental action feature: $admin_panel/actions.
+
+If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+
+ynh_send_readme_to_admin --app_message="$message" --recipients="root" --type="restore"

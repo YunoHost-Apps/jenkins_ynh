@@ -13,7 +13,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
 
-**Shipped version:** 2.121.1
+**Shipped version:** 2.150.2
 
 ## Screenshots
 
@@ -40,9 +40,9 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64b - [![Build Status](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/badge/icon)](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/) Really too slow on ARM architecture. Mostly not recommended to use it on ARM.
-* Jessie x86-64b - [![Build Status](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Community%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
 
@@ -65,7 +65,7 @@ Please do your pull request to the [testing branch](https://github.com/YunoHost-
 
 To try the testing branch, please proceed like that.
 ```
-sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --verbose
+sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 or
-sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --verbose
+sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```

@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, merci de regarder [ici](https://yunohost.org/#/inst
 ## Résumé
 Premier serveur d'automatisation open source, Jenkins fournit des centaines de plugins pour supporter la construction, le déploiement et l'automatisation de n'importe quel projet.
 
-**Version embarquée:** 2.121.1
+**Version embarquée:** 2.150.2
 
 ## Captures d'écran
 
@@ -40,9 +40,9 @@ Supportée, avec LDAP et SSO.
 
 #### Architectures supportées.
 
-* x86-64b - [![Build Status](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-apps.yunohost.org/jenkins/job/jenkins%20(Community)/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/badge/icon)](https://ci-apps-arm.yunohost.org/jenkins/job/jenkins%20(Community)%20(%7EARM%7E)/) Vraiment trop lent sur architecture ARM. Vraiment pas recommandé de l'utiliser sur ARM.
-* Jessie x86-64b - [![Build Status](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/badge/icon)](https://ci-stretch.nohost.me/jenkins/job/jenkins%20(Community)/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Community%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
 
@@ -65,7 +65,7 @@ Merci de faire vos pull request sur la [branche testing](https://github.com/Yuno
 
 Pour tester la branche testing, merci de procéder ainsi.
 ```
-sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --verbose
+sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ou
-sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --verbose
+sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```

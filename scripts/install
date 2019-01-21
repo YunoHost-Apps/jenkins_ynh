@@ -16,14 +16,16 @@ source _variables
 #=================================================
 
 ynh_clean_setup () {
-# Nettoyage des résidus d'installation non pris en charge par le script remove.
+	# Clean installation remaining that are not handle by the remove script.
 	ynh_clean_check_starting
-	ynh_exec_warn_less kill -s 15 $pid_change_port	# Arrête l'exécution de change_port
+	# Stop change_port()
+	ynh_exec_warn_less kill -s 15 $pid_change_port
 
 	# Clean hosts
 	sed -i '/#jenkins/d' /etc/hosts
 }
-ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
 
 #=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
@@ -45,8 +47,6 @@ test ! -e "$final_path" || ynh_die "This path already contains a folder"
 # Normalize the url path syntax
 path_url=$(ynh_normalize_url_path $path_url)
 
-# Check web path availability
-ynh_webpath_available $domain $path_url
 # Register (book) web path
 ynh_webpath_register $app $domain $path_url
 
@@ -66,7 +66,8 @@ ynh_app_setting_set $app overwrite_nginx "1"
 # FIND AND OPEN A PORT
 #=================================================
 
-port=$(ynh_find_port 8080)	# Cherche un port libre.
+# Find a free port
+port=$(ynh_find_port 8080)
 ynh_app_setting_set $app port $port
 
 #=================================================
@@ -79,6 +80,7 @@ ynh_install_app_dependencies $app_depencencies
 # NGINX CONFIGURATION
 #=================================================
 
+# Create a dedicated nginx config
 ynh_add_nginx_config
 
 #=================================================
@@ -89,9 +91,15 @@ ynh_add_nginx_config
 
 change_port() {
 	# Wait for the creation of the jenkins service file
-	while [ ! -e /etc/default/jenkins ]
+	timeout=600
+	for j in `seq 1 $timeout`
 	do
-		sleep 0.5
+		# Wait for an update of plugin repositories
+		if test -e /etc/default/jenkins; then
+			break;
+		else
+			sleep 0.5
+		fi
 	done
 	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
 	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
@@ -103,18 +111,20 @@ pid_change_port=$!
 # INSTALL JENKINS
 #=================================================
 
-wget --no-verbose https://pkg.jenkins.io/debian-stable/binary/jenkins_${jenkins_version}_all.deb
-dpkg --install jenkins_${jenkins_version}_all.deb
+# Download jenkins deb file and install it.
+ynh_download_file --dest_dir="../conf"
+dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
 # SETUP JENKINS
 #=================================================
 
-# Ignore le Setup Wizard
+# Ignore Setup Wizard
 ynh_replace_string "-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizard=false" /etc/default/jenkins
 
 if [ "$path_url" != "/" ];
-then	# Ajoute le path en cas d'installation en sous-dossier dans les options de démarrage de Jenkins
+then
+	# Add the path, in case of sub-path installation, into jenkins' boot options
 	sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
 fi
 
@@ -122,14 +132,14 @@ fi
 # FORCE PUBLIC ACCESS
 #=================================================
 
-# Jenkins est public par défaut, au moins pour le téléchargement de jenkins-cli.jar
+# Jenkins has to be public, at least for jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
 
-ynh_system_reload --service_name=nginx
+ynh_systemd_action --action=reload --service_name=nginx
 yunohost app ssowatconf
 
 #=================================================
-# ENABLE SERVICE IN ADMIN PANEL
+# ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
 yunohost service add $app --log /var/log/$app/$app.log
@@ -140,18 +150,24 @@ yunohost service add $app --log /var/log/$app/$app.log
 
 config_OK=0
 timeout=3600
-echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts	# Renseigne le domain dans le host, pour prévenir d'un dns pas encore propagé.
+# Add the domain to /etc/hosts, to prevent any dns delay
+echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
-jenkins_cli="java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
+# Wait for Jenkins to be fully started
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
-# Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
+# Enable Jenkins CLI Protocol/2 for jenkins-cli
+# That the only protocol that allow connection without an authenticated user...
+ynh_replace_string "<slaveAgentPort>0</slaveAgentPort>" "&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" /var/lib/jenkins/config.xml
 
+# Wait for Jenkins to be fully started
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
-# Si le log annonce une première fois le démarrage de jenkins. Installe les plugins
+# If the log says that jenkins has started, install the plugins
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 for i in `seq 1 $timeout`
-do	# La boucle attend la mise à jour des dépôts de plugins.
+do
+	# Wait for an update of plugin repositories
 	if test -e /var/lib/jenkins/updates/default.json; then
 		break;
 	else
@@ -160,10 +176,12 @@ do	# La boucle attend la mise à jour des dépôts de plugins.
 	fi
 done
 
-# Installation du plugin pour l'authentification ldap et http auth
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
+
+# Install plugins for http authentication and ldap.
 $jenkins_cli install-plugin reverse-proxy-auth-plugin
 
-# Installation des plugins recommandés (Lors de l'install avec le Setup Wizard)
+# Install recommended plugins (those from Setup Wizard)
 $jenkins_cli install-plugin cloudbees-folder	# Folders Plugin
 $jenkins_cli install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
 $jenkins_cli install-plugin pam-auth	# PAM Authentication plugin
@@ -184,26 +202,29 @@ $jenkins_cli install-plugin subversion	# Subversion Plug-in
 $jenkins_cli install-plugin email-ext	# Email Extension Plugin
 $jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
 
-# Installation de plugins supplémentaires pour le confort
-$jenkins_cli install-plugin ansicolor	# Prise en charge des couleurs pour la sortie console. Améliore la lisibilité de la console (par contre les couleurs ne passent pas...)
-$jenkins_cli install-plugin fstrigger # Monitoring sur le système de fichier local. Pour surveiller des dossiers de code et builder sur les changements.
+# Install extra comfort plugins
+# Handle terminal colours. Enhance the readability of the terminal.
+$jenkins_cli install-plugin ansicolor
+# MOnitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
+$jenkins_cli install-plugin fstrigger
 
-# Configure la sécurité globale avec ldap par défaut.
+# Set global security with ldap
 cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
-# Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="$timeout"
+# Wait for Jenkins to be fully started
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
 
-# Si Jenkins est privé, retire l'autorisation publique.
 if [ $is_public -eq 0 ]
-then	# Retire l'accès public
+then
+	# Remove the public access
 	ynh_app_setting_delete $app unprotected_uris
-	ynh_app_setting_set $app skipped_uris "/github-webhook"	# /path/github-webhook doit rester accessible pour les webhooks de github.
+	# /path/github-webhook has to be accessible for github's webhooks
+	ynh_app_setting_set $app skipped_uris "/github-webhook"
 fi
 
 #=================================================
@@ -216,6 +237,12 @@ sed -i '/#jenkins/d' /etc/hosts
 # SEND A README FOR THE ADMIN
 #=================================================
 
-message="If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+# Get main domain and buid the url of the admin panel of the app.
+admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="root"
+message="You can configure this app easily by using the experimental config-panel feature: $admin_panel/config-panel.
+You can also find some specific actions for this app by using the experimental action feature: $admin_panel/actions.
+
+If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+
+ynh_send_readme_to_admin --app_message="$message" --recipients="root" --type="install"

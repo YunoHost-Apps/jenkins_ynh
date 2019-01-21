@@ -31,17 +31,17 @@ domain=$(ynh_app_setting_get $app domain)
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
-# BACKUP OF THE MAIN DIR OF THE APP
+# BACKUP THE APP MAIN DIR
 #=================================================
 
-ynh_system_reload --service_name=jenkins --action=stop
+ynh_systemd_action --action=stop --service_name=jenkins
 sleep 1
 
 CHECK_SIZE "$final_path"
 ynh_backup "$final_path"
 
 #=================================================
-# BACKUP OF THE NGINX CONFIGURATION
+# BACKUP THE NGINX CONFIGURATION
 #=================================================
 
 ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
@@ -49,7 +49,7 @@ ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
-# BACKUP OF THE JENKINS' BOOT CONFIG
+# BACKUP THE JENKINS' BOOT CONFIG
 #=================================================
 
 ynh_backup /etc/default/$app
@@ -58,5 +58,5 @@ ynh_backup /etc/default/$app
 # CHECK JENKINS STARTING
 #=================================================
 
-# Wait for Jenkins fully started
-ynh_check_starting --line_to_match="Jenkins is fully up and running" --app_log="/var/log/$app/$app.log" --timeout="300"
+# Wait for Jenkins to be fully started
+ynh_systemd_action --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="300"
