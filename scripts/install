@@ -153,7 +153,12 @@ timeout=3600
 # Add the domain to /etc/hosts, to prevent any dns delay
 echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
+# Wait for Jenkins to be fully started
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+
+# Enable Jenkins CLI Protocol/2 for jenkins-cli
+# That the only protocol that allow connection without an authenticated user...
+ynh_replace_string "<slaveAgentPort>0</slaveAgentPort>" "&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" /var/lib/jenkins/config.xml
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -170,6 +175,8 @@ do
 		sleep 1
 	fi
 done
+
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
 
 # Install plugins for http authentication and ldap.
 $jenkins_cli install-plugin reverse-proxy-auth-plugin
