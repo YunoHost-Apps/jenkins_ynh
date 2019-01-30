@@ -12,6 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
+ynh_script_progression --message="Retrieve arguments from the manifest" --weight=2
 
 old_domain=$YNH_APP_OLD_DOMAIN
 old_path=$YNH_APP_OLD_PATH
@@ -24,12 +25,14 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=2
 
 port=$(ynh_app_setting_get $app port)
 
 #=================================================
 # CHECK THE SYNTAX OF THE PATHS
 #=================================================
+ynh_script_progression --message="Check the syntax of the paths"
 
 test -n "$old_path" || old_path="/"
 test -n "$new_path" || new_path="/"
@@ -39,6 +42,7 @@ old_path=$(ynh_normalize_url_path $old_path)
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Activate maintenance mode" --weight=2
 
 path_url=$old_path
 domain=$old_domain
@@ -75,6 +79,7 @@ ynh_abort_if_errors
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
+ynh_script_progression --message="Modify url in nginx configuration" --weight=5
 
 nginx_conf_path=/etc/nginx/conf.d/$old_domain.d/$app.conf
 
@@ -109,8 +114,9 @@ fi
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================
-# FIX JENKINS SETUP
+# MODIFY JENKINS SETUP
 #=================================================
+ynh_script_progression --message="Modify jenkins setup"
 
 if [ $change_path -eq 1 ]
 then
@@ -134,6 +140,7 @@ fi
 #=================================================
 # RESTART JENKINS IN BACKGROUND
 #=================================================
+ynh_script_progression --message="Restart Jenkins" --weight=30
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="300"
@@ -141,13 +148,21 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reload nginx" --weight=2
 
 ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Deactive maintenance mode" --weight=5
 
 path_url=$old_path
 domain=$old_domain
 ynh_maintenance_mode_OFF
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Change of url completed" --last

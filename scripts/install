@@ -30,6 +30,7 @@ ynh_abort_if_errors
 #=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
+ynh_script_progression --message="Retrieve arguments from the manifest"
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
@@ -40,6 +41,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
 #=================================================
+ynh_script_progression --message="Check if the app can be installed"
 
 final_path=/var/lib/$app
 test ! -e "$final_path" || ynh_die "This path already contains a folder"
@@ -53,6 +55,7 @@ ynh_webpath_register $app $domain $path_url
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
+ynh_script_progression --message="Store settings from manifest" --weight=3
 
 ynh_app_setting_set $app domain $domain
 ynh_app_setting_set $app path $path_url
@@ -65,6 +68,7 @@ ynh_app_setting_set $app overwrite_nginx "1"
 #=================================================
 # FIND AND OPEN A PORT
 #=================================================
+ynh_script_progression --message="Find a free port" --weight=2
 
 # Find a free port
 port=$(ynh_find_port 8080)
@@ -73,12 +77,14 @@ ynh_app_setting_set $app port $port
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
+ynh_script_progression --message="Install dependencies" --weight=30
 
 ynh_install_app_dependencies $app_depencencies
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Configure nginx" --weight=2
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -88,6 +94,7 @@ ynh_add_nginx_config
 #=================================================
 # FIX THE PORT TO USE
 #=================================================
+ynh_script_progression --message="Fix the port to use" --weight=2
 
 change_port() {
 	# Wait for the creation of the jenkins service file
@@ -110,6 +117,7 @@ pid_change_port=$!
 #=================================================
 # INSTALL JENKINS
 #=================================================
+ynh_script_progression --message="Install Jenkins" --weight=30
 
 # Download jenkins deb file and install it.
 ynh_download_file --dest_dir="../conf"
@@ -118,6 +126,7 @@ dpkg --install --force-confnew ../conf/jenkins.deb
 #=================================================
 # SETUP JENKINS
 #=================================================
+ynh_script_progression --message="Configure Jenkins"
 
 # Ignore Setup Wizard
 ynh_replace_string "-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizard=false" /etc/default/jenkins
@@ -131,6 +140,7 @@ fi
 #=================================================
 # FORCE PUBLIC ACCESS
 #=================================================
+ynh_script_progression --message="Force public access for the installation" --weight=5
 
 # Jenkins has to be public, at least for jenkins-cli.jar
 ynh_app_setting_set $app unprotected_uris "/"
@@ -147,6 +157,7 @@ yunohost service add $app --log /var/log/$app/$app.log
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
+ynh_script_progression --message="Start Jenkins" --weight=25
 
 config_OK=0
 timeout=3600
@@ -162,6 +173,8 @@ ynh_replace_string "<slaveAgentPort>0</slaveAgentPort>" "&\n<enabledAgentProtoco
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+
+ynh_script_progression --message="Install plugins" --weight=60
 
 # If the log says that jenkins has started, install the plugins
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
@@ -212,12 +225,15 @@ $jenkins_cli install-plugin fstrigger
 cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
+ynh_script_progression --message="Restart Jenkins" --weight=20
+
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
+ynh_script_progression --message="Setup SSOwat" --weight=9
 
 if [ $is_public -eq 0 ]
 then
@@ -245,4 +261,8 @@ You can also find some specific actions for this app by using the experimental a
 
 If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="root" --type="install"
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Installation completed" --last

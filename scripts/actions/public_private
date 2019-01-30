@@ -12,6 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
+ynh_script_progression --message="Retrieve arguments from the manifest"
 
 # Get is_public
 is_public=${YNH_ACTION_IS_PUBLIC}
@@ -38,6 +39,12 @@ fi
 #=================================================
 # MOVE TO PUBLIC OR PRIVATE
 #=================================================
+if [ $is_public -eq 0 ]; then
+	public_private="private"
+else
+	public_private="public"
+fi
+ynh_script_progression --message="Move the application to $public_private" --weight=3
 
 if [ $is_public -eq 0 ]
 then
@@ -49,6 +56,7 @@ else
 	ynh_app_setting_set $app unprotected_uris "/"
 fi
 
+ynh_script_progression --message="Reconfigure SSOwat"
 # Regen ssowat configuration
 yunohost app ssowatconf
 
@@ -58,5 +66,12 @@ ynh_app_setting_set $app is_public $is_public
 #=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reload nginx"
 
 ynh_systemd_action --action=reload --service_name=nginx
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Execution completed" --last
