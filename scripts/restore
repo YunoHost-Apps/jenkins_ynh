@@ -135,7 +135,7 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Deactive maintenance mode" --weight=8
+ynh_script_progression --message="Disable maintenance mode" --weight=8
 
 ynh_maintenance_mode_OFF
 

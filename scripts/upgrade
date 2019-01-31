@@ -163,7 +163,7 @@ wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.ja
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Deactive maintenance mode" --weight=6
+ynh_script_progression --message="Disable maintenance mode" --weight=6
 
 ynh_maintenance_mode_OFF
 
