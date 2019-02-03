@@ -12,6 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=4
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -33,6 +34,7 @@ fi
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
+ynh_script_progression --message="Remove dependencies" --weight=20
 
 ynh_apt purge jenkins
 # Remove metapackage and its dependencies
@@ -42,6 +44,13 @@ ynh_secure_remove "/var/lib/jenkins"
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Remove nginx configuration" --weight=2
 
 # Remove the dedicated nginx config
 ynh_remove_nginx_config
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Deletion completed" --last

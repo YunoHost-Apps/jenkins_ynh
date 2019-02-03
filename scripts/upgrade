@@ -14,6 +14,7 @@ source _variables
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Load settings" --weight=4
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -32,6 +33,7 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
+ynh_script_progression --message="Ensure downward compatibility"
 
 # Fix is_public as a boolean
 if [ "$is_public" = "Yes" ]; then
@@ -62,6 +64,7 @@ fi
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
+ynh_script_progression --message="Backup the app before upgrading" --weight=40
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -76,6 +79,7 @@ ynh_abort_if_errors
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Activate maintenance mode" --weight=2
 
 ynh_maintenance_mode_ON
 
@@ -85,6 +89,7 @@ ynh_maintenance_mode_ON
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
+	ynh_script_progression --message="Upgrade Jenkins" --weight=40
 	# Download jenkins deb file and install it.
 	ynh_download_file --dest_dir="../conf"
 	dpkg --install --force-confnew ../conf/jenkins.deb
@@ -106,6 +111,7 @@ fi
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
+ynh_script_progression --message="Upgrade dependencies" --weight=12
 
 ynh_install_app_dependencies $app_depencencies
 
@@ -116,12 +122,14 @@ ynh_install_app_dependencies $app_depencencies
 # Overwrite the nginx configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
+	ynh_script_progression --message="Reconfigure nginx" --weight=4
 	ynh_add_nginx_config
 fi
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
+ynh_script_progression --message="Reconfigure SSOwat"
 
 if [ $is_public -eq 1 ]
 then
@@ -133,12 +141,14 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reload nginx" --weight=2
 
 ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
+ynh_script_progression --message="Restart Jenkins" --weight=25
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
@@ -146,12 +156,14 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 # UPGRADE JENKINS-CLI.PHAR
 #=================================================
+ynh_script_progression --message="Upgrade jenkins-cli.phar"
 
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
+ynh_script_progression --message="Disable maintenance mode" --weight=6
 
 ynh_maintenance_mode_OFF
 
@@ -162,9 +174,23 @@ ynh_maintenance_mode_OFF
 # Get main domain and buid the url of the admin panel of the app.
 admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-message="You can configure this app easily by using the experimental config-panel feature: $admin_panel/config-panel.
-You can also find some specific actions for this app by using the experimental action feature: $admin_panel/actions.
+# Build the changelog
+ynh_app_changelog || true
 
-If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/jenkins_ynh"
+echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
+You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
 
-ynh_send_readme_to_admin --app_message="$message" --recipients="root" --type="upgrade"
+If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__.
+
+---
+
+Changelog since your last upgrade:
+$(cat changelog)" > mail_to_send
+
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type="upgrade"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Upgrade completed" --last

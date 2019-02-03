@@ -6,7 +6,7 @@
 		"en": "Extendable continuous integration server",
 		"fr": "Serveur d'intégration continue extensible"
 	},
-	"version": "2.150.2~ynh1",
+	"version": "2.150.2~ynh2",
 	"url": "https://jenkins.io/index.html",
 	"license": "MIT",
 	"maintainer": {
@@ -14,7 +14,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	},
 	"requirements": {
-		"yunohost": ">= 3.3.3"
+		"yunohost": ">= 3.4"
 	},
 	"multi_instance": false,
 	"services": [
