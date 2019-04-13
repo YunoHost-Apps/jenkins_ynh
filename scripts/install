@@ -131,7 +131,7 @@ dpkg --install --force-confnew ../conf/jenkins.deb
 ynh_script_progression --message="Configure Jenkins"
 
 # Ignore Setup Wizard
-ynh_replace_string "-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizard=false" /etc/default/jenkins
+ynh_replace_string "\-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizard=false" /etc/default/jenkins
 
 if [ "$path_url" != "/" ];
 then
