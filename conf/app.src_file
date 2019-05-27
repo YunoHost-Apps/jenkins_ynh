@@ -1,4 +1,0 @@
-FILE_URL=https://pkg.jenkins.io/debian-stable/binary/jenkins_2.164.2_all.deb
-FILE_SUM=4ccafc1854231f43fc9e44bd224755d2
-FILE_SUM_PRG=md5sum
-FILENAME=jenkins.deb

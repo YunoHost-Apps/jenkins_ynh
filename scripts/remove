@@ -12,11 +12,11 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=4
+ynh_script_progression --message="Loading installation settings..." --weight=4
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
 
 #=================================================
 # STANDARD REMOVE
@@ -25,26 +25,26 @@ domain=$(ynh_app_setting_get $app domain)
 #=================================================
 
 # Check if the service is declared in YunoHost
-if yunohost service status | grep -q $app
+if yunohost service status $app >/dev/null 2>&1
 then
-	ynh_print_info "Remove $app service" >&2
+	ynh_script_progression --message="Removing $app service..."
 	yunohost service remove $app
 fi
 
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Remove dependencies" --weight=20
+ynh_script_progression --message="Removing dependencies..." --weight=20
 
 ynh_apt purge jenkins
 # Remove metapackage and its dependencies
 ynh_remove_app_dependencies
-ynh_secure_remove "/var/lib/jenkins"
+ynh_secure_remove --file="/var/lib/jenkins"
 
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Remove nginx configuration" --weight=2
+ynh_script_progression --message="Removing nginx web server configuration..." --weight=2
 
 # Remove the dedicated nginx config
 ynh_remove_nginx_config
@@ -53,4 +53,4 @@ ynh_remove_nginx_config
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Deletion completed" --last
+ynh_script_progression --message="Removal of $app completed" --last

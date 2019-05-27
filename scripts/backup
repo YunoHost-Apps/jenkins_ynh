@@ -22,32 +22,32 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=3
+ynh_script_progression --message="Loading installation settings..." --weight=3
 
 app=$YNH_APP_INSTANCE_NAME
 
-final_path=$(ynh_app_setting_get $app final_path)
-domain=$(ynh_app_setting_get $app domain)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
 
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
 # BACKUP THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Backup the app main dir" --weight=15
+ynh_script_progression --message="Backing up the main app directory..." --weight=15
 
 ynh_systemd_action --action=stop --service_name=jenkins
 sleep 1
 
 CHECK_SIZE "$final_path"
-ynh_backup "$final_path"
+ynh_backup --src_path="$final_path"
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Backup nginx configuration"
+ynh_script_progression --message="Backing up nginx web server configuration..."
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # SPECIFIC BACKUP
@@ -55,12 +55,12 @@ ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 # BACKUP THE JENKINS' BOOT CONFIG
 #=================================================
 
-ynh_backup /etc/default/$app
+ynh_backup --src_path=/etc/default/$app
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
-ynh_script_progression --message="Restart Jenkins" --weight=20
+ynh_script_progression --message="Restarting Jenkins..." --weight=20
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="300"
@@ -69,4 +69,4 @@ ynh_systemd_action --line_match="Jenkins is fully up and running" --log_path="/v
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Backup completed" --last
+ynh_script_progression --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)." --last

@@ -40,9 +40,9 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Community%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
 
@@ -54,6 +54,7 @@ Supported, with LDAP and SSO.
 
  * Report a bug: https://github.com/YunoHost-Apps/jenkins_ynh/issues
  * Jenkins website: https://jenkins.io
+ * Jenkins repository: https://github.com/jenkinsci/jenkins
  * YunoHost website: https://yunohost.org/
 
 ---
