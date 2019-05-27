@@ -11,7 +11,7 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1	from_commit=f53f880595cf42304c4628d05f83afa55084d8f6
+		upgrade=1	from_commit=29141b702f2954e0f72925121aea82a7fa3fc118
 		backup_restore=1
 		multi_instance=0
 		incorrect_path=1
@@ -23,6 +23,6 @@
 Email=
 Notification=down
 ;;; Upgrade options
-	; commit=f53f880595cf42304c4628d05f83afa55084d8f6
-		name=24 Dec 2017 f53f880595cf42304c4628d05f83afa55084d8f6
+	; commit=29141b702f2954e0f72925121aea82a7fa3fc118
+		name= Fix for getopts 13 Apr 2019
 		manifest_arg=domain=DOMAIN&path=PATH&is_public=1&
