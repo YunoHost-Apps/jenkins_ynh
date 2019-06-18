@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, merci de regarder [ici](https://yunohost.org/#/inst
 ## Résumé
 Premier serveur d'automatisation open source, Jenkins fournit des centaines de plugins pour supporter la construction, le déploiement et l'automatisation de n'importe quel projet.
 
-**Version embarquée:** 2.164.2
+**Version embarquée:** 2.176.1
 
 ## Captures d'écran
 
