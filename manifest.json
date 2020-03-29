@@ -14,7 +14,7 @@
 		"email": "maniackc_dev@crudelis.fr"
 	},
 	"requirements": {
-		"yunohost": ">= 3.4"
+		"yunohost": ">= 3.5.0"
 	},
 	"multi_instance": false,
 	"services": [
@@ -48,7 +48,11 @@
 					"en": "Is it a public site?",
 					"fr": "Est-ce un site public ?"
 				},
-				"default": true
+				"default": true,
+				"help": {
+					"en": "A public Jenkins will be accessible by everyone unless you configure the security into jenkins admin panel.",
+					"fr": "Un Jenkins public sera accessible par tout le monde à moins que vous ne configuriez la sécurité dans le panneau d'administration de jenkins."
+				}
 			}
 		]
 	}

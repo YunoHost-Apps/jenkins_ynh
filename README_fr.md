@@ -1,6 +1,6 @@
 # Jenkins pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins)  
+[![Niveau d'intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
 [![Installer Jenkins avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Read this readme in english.](./README.md)*
@@ -40,9 +40,9 @@ Supportée, avec LDAP et SSO.
 
 #### Architectures supportées.
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Community%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Community%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
+* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
+* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
 
@@ -54,6 +54,7 @@ Supportée, avec LDAP et SSO.
 
  * Reporter un bug: https://github.com/YunoHost-Apps/jenkins_ynh/issues
  * Site de jenkins: https://jenkins.io
+ * Dépôt git de jenkins: https://github.com/jenkinsci/jenkins
  * Site de YunoHost: https://yunohost.org/
 
 ---

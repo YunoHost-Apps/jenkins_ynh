@@ -30,7 +30,6 @@ ynh_abort_if_errors
 #=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
-ynh_script_progression --message="Retrieve arguments from the manifest"
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
@@ -41,52 +40,49 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
 #=================================================
-ynh_script_progression --message="Check if the app can be installed"
+ynh_script_progression --message="Validating installation parameters..."
 
 final_path=/var/lib/$app
-test ! -e "$final_path" || ynh_die "This path already contains a folder"
-
-# Normalize the url path syntax
-path_url=$(ynh_normalize_url_path $path_url)
+test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
 
 # Register (book) web path
-ynh_webpath_register $app $domain $path_url
+ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Store settings from manifest" --weight=3
+ynh_script_progression --message="Storing installation settings..." --weight=3
 
-ynh_app_setting_set $app domain $domain
-ynh_app_setting_set $app path $path_url
-ynh_app_setting_set $app is_public $is_public
-ynh_app_setting_set $app final_path $final_path
+ynh_app_setting_set --app=$app --key=domain --value=$domain
+ynh_app_setting_set --app=$app --key=path --value=$path_url
+ynh_app_setting_set --app=$app --key=is_public --value=$is_public
+ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 
-ynh_app_setting_set $app overwrite_nginx "1"
-ynh_app_setting_set $app admin_mail_html "1"
+ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
+ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # FIND AND OPEN A PORT
 #=================================================
-ynh_script_progression --message="Find a free port" --weight=2
+ynh_script_progression --message="Configuring firewall..." --weight=2
 
 # Find a free port
-port=$(ynh_find_port 8080)
-ynh_app_setting_set $app port $port
+port=$(ynh_find_port --port=8080)
+ynh_app_setting_set --app=$app --key=port --value=$port
 
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Install dependencies" --weight=30
+ynh_script_progression --message="Installing dependencies..." --weight=30
 
 ynh_install_app_dependencies $app_depencencies
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configure nginx" --weight=2
+ynh_script_progression --message="Configuring nginx web server..." --weight=2
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -96,7 +92,7 @@ ynh_add_nginx_config
 #=================================================
 # FIX THE PORT TO USE
 #=================================================
-ynh_script_progression --message="Fix the port to use" --weight=2
+ynh_script_progression --message="Fixing the port in Jenkins config..." --weight=2
 
 change_port() {
 	# Wait for the creation of the jenkins service file
@@ -111,7 +107,7 @@ change_port() {
 		fi
 	done
 	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
-	ynh_replace_string "^HTTP_PORT=.*" "HTTP_PORT=$port" /etc/default/jenkins
+	ynh_replace_string --match_string="^HTTP_PORT=.*" --replace_string="HTTP_PORT=$port" --target_file=/etc/default/jenkins
 }
 change_port &
 pid_change_port=$!
@@ -119,21 +115,21 @@ pid_change_port=$!
 #=================================================
 # INSTALL JENKINS
 #=================================================
-ynh_script_progression --message="Install Jenkins" --weight=30
+ynh_script_progression --message="Installing Jenkins..." --weight=30
 
 # Download jenkins deb file and install it.
-ynh_download_file --dest_dir="../conf"
+ynh_setup_source --dest_dir="../conf"
 dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
 # SETUP JENKINS
 #=================================================
-ynh_script_progression --message="Configure Jenkins"
+ynh_script_progression --message="Configuring Jenkins..."
 
 # Ignore Setup Wizard
-ynh_replace_string "\-Djava.awt.headless=true" "& -Djenkins.install.runSetupWizard=false" /etc/default/jenkins
+ynh_replace_string --match_string="\-Djava.awt.headless=true" --replace_string="& -Djenkins.install.runSetupWizard=false" --target_file=/etc/default/jenkins
 
-if [ "$path_url" != "/" ];
+if [ "$path_url" != "/" ]
 then
 	# Add the path, in case of sub-path installation, into jenkins' boot options
 	sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
@@ -142,10 +138,10 @@ fi
 #=================================================
 # FORCE PUBLIC ACCESS
 #=================================================
-ynh_script_progression --message="Force public access for the installation" --weight=5
+ynh_script_progression --message="Forcing public access for the installation..." --weight=5
 
 # Jenkins has to be public, at least for jenkins-cli.jar
-ynh_app_setting_set $app unprotected_uris "/"
+ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
 
 ynh_systemd_action --action=reload --service_name=nginx
 yunohost app ssowatconf
@@ -159,7 +155,7 @@ yunohost service add $app --log /var/log/$app/$app.log
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
-ynh_script_progression --message="Start Jenkins" --weight=25
+ynh_script_progression --message="Starting Jenkins..." --weight=25
 
 config_OK=0
 timeout=3600
@@ -171,12 +167,12 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 
 # Enable Jenkins CLI Protocol/2 for jenkins-cli
 # That the only protocol that allow connection without an authenticated user...
-ynh_replace_string "<slaveAgentPort>0</slaveAgentPort>" "&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" /var/lib/jenkins/config.xml
+ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=/var/lib/jenkins/config.xml
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
-ynh_script_progression --message="Install plugins" --weight=60
+ynh_script_progression --message="Installing plugins..." --weight=60
 
 # If the log says that jenkins has started, install the plugins
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
@@ -227,7 +223,7 @@ $jenkins_cli install-plugin fstrigger
 cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
-ynh_script_progression --message="Restart Jenkins" --weight=20
+ynh_script_progression --message="Restarting Jenkins..." --weight=20
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -235,14 +231,14 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Setup SSOwat" --weight=9
+ynh_script_progression --message="Configuring SSOwat..." --weight=9
 
 if [ $is_public -eq 0 ]
 then
 	# Remove the public access
-	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 	# /path/github-webhook has to be accessible for github's webhooks
-	ynh_app_setting_set $app skipped_uris "/github-webhook"
+	ynh_app_setting_set --app=$app --key=skipped_uris --value="/github-webhook"
 fi
 
 #=================================================
@@ -263,10 +259,10 @@ You can also find some specific actions for this app by using the experimental _
 
 If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__." > mail_to_send
 
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type="install"
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=install
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation completed" --last
+ynh_script_progression --message="Installation of $app completed" --last

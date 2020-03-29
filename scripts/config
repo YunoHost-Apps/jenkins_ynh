@@ -17,7 +17,7 @@ source _variables
 
 app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
 
-final_path=$(ynh_app_setting_get $app final_path)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 #=================================================
 # SPECIFIC CODE
@@ -31,17 +31,17 @@ final_path=$(ynh_app_setting_get $app final_path)
 # Otherwise, keep the value from the app config.
 
 # is_public
-old_is_public="$(ynh_app_setting_get $app is_public)"
+old_is_public="$(ynh_app_setting_get --app=$app --key=is_public)"
 old_is_public=$(bool_to_true_false $old_is_public)
 is_public="${YNH_CONFIG_MAIN_IS_PUBLIC_IS_PUBLIC:-$old_is_public}"
 
 # Overwrite nginx configuration
-old_overwrite_nginx="$(ynh_app_setting_get $app overwrite_nginx)"
+old_overwrite_nginx="$(ynh_app_setting_get --app=$app --key=overwrite_nginx)"
 old_overwrite_nginx=$(bool_to_true_false $old_overwrite_nginx)
 overwrite_nginx="${YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX:-$old_overwrite_nginx}"
 
 # Type of admin mail configuration
-old_admin_mail_html="$(ynh_app_setting_get $app admin_mail_html)"
+old_admin_mail_html="$(ynh_app_setting_get --app=$app --key=admin_mail_html)"
 old_admin_mail_html=$(bool_to_true_false $old_admin_mail_html)
 admin_mail_html="${YNH_CONFIG_MAIN_GLOBAL_CONFIG_EMAIL_TYPE:-$old_admin_mail_html}"
 
@@ -76,11 +76,11 @@ apply_config() {
 
 	# Set overwrite_nginx
 	overwrite_nginx=$(bool_to_01 $overwrite_nginx)
-	ynh_app_setting_set $app overwrite_nginx "$overwrite_nginx"
+	ynh_app_setting_set --app=$app --key=overwrite_nginx --value="$overwrite_nginx"
 
 	# Set admin_mail_html
 	admin_mail_html=$(bool_to_01 $admin_mail_html)
-	ynh_app_setting_set $app admin_mail_html "$admin_mail_html"
+	ynh_app_setting_set --app=$app --key=admin_mail_html --value="$admin_mail_html"
 }
 
 #=================================================

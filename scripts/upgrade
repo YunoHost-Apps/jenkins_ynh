@@ -14,15 +14,15 @@ source _variables
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Load settings" --weight=4
+ynh_script_progression --message="Loading installation settings..." --weight=4
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-path_url=$(ynh_app_setting_get $app path)
-is_public=$(ynh_app_setting_get $app is_public)
-port=$(ynh_app_setting_get $app port)
-overwrite_nginx=$(ynh_app_setting_get $app overwrite_nginx)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+port=$(ynh_app_setting_get --app=$app --key=port)
+overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
 
 #=================================================
 # CHECK VERSION
@@ -33,27 +33,27 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensure downward compatibility"
+ynh_script_progression --message="Ensuring downward compatibility..."
 
 # Fix is_public as a boolean
 if [ "$is_public" = "Yes" ]; then
-	ynh_app_setting_set $app is_public 1
+	ynh_app_setting_set --app=$app --key=is_public --value=1
 	is_public=1
 elif [ "$is_public" = "No" ]; then
-	ynh_app_setting_set $app is_public 0
+	ynh_app_setting_set --app=$app --key=is_public --value=0
 	is_public=0
 fi
 
 # If overwrite_nginx doesn't exist, create it
 if [ -z "$overwrite_nginx" ]; then
 	overwrite_nginx=1
-	ynh_app_setting_set $app overwrite_nginx $overwrite_nginx
+	ynh_app_setting_set --app=$app --key=overwrite_nginx --value=$overwrite_nginx
 fi
 
 # Remove the apt list entry for jenkins
 if [ -e "/etc/apt/sources.list.d/jenkins.list" ]
 then
-	ynh_secure_remove /etc/apt/sources.list.d/jenkins.list
+	ynh_secure_remove --file=/etc/apt/sources.list.d/jenkins.list
 	# Get APT key id for jenkins
 	apt_key=$(apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)
 	# Delete the APT key
@@ -64,7 +64,7 @@ fi
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backup the app before upgrading" --weight=40
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=40
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -79,7 +79,7 @@ ynh_abort_if_errors
 #=================================================
 # ACTIVATE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Activate maintenance mode" --weight=2
+ynh_script_progression --message="Activating maintenance mode..." --weight=2
 
 ynh_maintenance_mode_ON
 
@@ -89,9 +89,9 @@ ynh_maintenance_mode_ON
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrade Jenkins" --weight=40
+	ynh_script_progression --message="Upgrading Jenkins..." --weight=40
 	# Download jenkins deb file and install it.
-	ynh_download_file --dest_dir="../conf"
+	ynh_setup_source --dest_dir="../conf"
 	dpkg --install --force-confnew ../conf/jenkins.deb
 
 	#=================================================
@@ -111,7 +111,7 @@ fi
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrade dependencies" --weight=12
+ynh_script_progression --message="Upgrading dependencies..." --weight=12
 
 ynh_install_app_dependencies $app_depencencies
 
@@ -122,33 +122,35 @@ ynh_install_app_dependencies $app_depencencies
 # Overwrite the nginx configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
-	ynh_script_progression --message="Reconfigure nginx" --weight=4
+	ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=4
+
+	# Create a dedicated nginx config
 	ynh_add_nginx_config
 fi
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Reconfigure SSOwat"
+ynh_script_progression --message="Upgrading SSOwat configuration..."
 
 if [ $is_public -eq 1 ]
 then
-	ynh_app_setting_set $app unprotected_uris "/"
+	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
 else
-	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 fi
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reload nginx" --weight=2
+ynh_script_progression --message="Reloading nginx web server..." --weight=2
 
 ynh_systemd_action --action=reload --service_name=nginx
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
-ynh_script_progression --message="Restart Jenkins" --weight=25
+ynh_script_progression --message="Restarting Jenkins..." --weight=25
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
@@ -156,14 +158,14 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 # UPGRADE JENKINS-CLI.PHAR
 #=================================================
-ynh_script_progression --message="Upgrade jenkins-cli.phar"
+ynh_script_progression --message="Upgrading jenkins-cli.phar..."
 
 wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
 #=================================================
-ynh_script_progression --message="Disable maintenance mode" --weight=6
+ynh_script_progression --message="Disabling maintenance mode..." --weight=6
 
 ynh_maintenance_mode_OFF
 
@@ -187,10 +189,10 @@ If you're facing an issue or want to improve this app, please open a new issue i
 Changelog since your last upgrade:
 $(cat changelog)" > mail_to_send
 
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type="upgrade"
+ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=upgrade
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade completed" --last
+ynh_script_progression --message="Upgrade of $app completed" --last

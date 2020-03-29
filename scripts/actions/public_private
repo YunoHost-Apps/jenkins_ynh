@@ -12,7 +12,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RETRIEVE ARGUMENTS
 #=================================================
-ynh_script_progression --message="Retrieve arguments from the manifest"
 
 # Get is_public
 is_public=${YNH_ACTION_IS_PUBLIC}
@@ -27,11 +26,11 @@ app=${YNH_APP_INSTANCE_NAME:-$YNH_APP_ID}
 # CHECK IF AN ACTION HAS TO BE DONE
 #=================================================
 
-is_public_old=$(ynh_app_setting_get $app is_public)
+is_public_old=$(ynh_app_setting_get --app=$app --key=is_public)
 
 if [ $is_public -eq $is_public_old ]
 then
-	ynh_die "is_public is already set as $is_public." 0
+	ynh_die --message="is_public is already set as $is_public." 0
 fi
 
 #=================================================
@@ -44,16 +43,16 @@ if [ $is_public -eq 0 ]; then
 else
 	public_private="public"
 fi
-ynh_script_progression --message="Move the application to $public_private" --weight=3
+ynh_script_progression --message="Moving the application to $public_private..." --weight=3
 
 if [ $is_public -eq 0 ]
 then
-	ynh_app_setting_delete $app unprotected_uris
+	ynh_app_setting_delete --app=$app --key=unprotected_uris
 	# /path/github-webhook has to be accessible for github's webhooks
-	ynh_app_setting_set $app skipped_uris "/github-webhook" pour les webhooks de github.
+	ynh_app_setting_set --app=$app --key=skipped_uris --value="/github-webhook"
 else
-	ynh_app_setting_delete $app skipped_uris
-	ynh_app_setting_set $app unprotected_uris "/"
+	ynh_app_setting_delete --app=$app --key=skipped_uris
+	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
 fi
 
 ynh_script_progression --message="Reconfigure SSOwat"
@@ -61,7 +60,7 @@ ynh_script_progression --message="Reconfigure SSOwat"
 yunohost app ssowatconf
 
 # Update the config of the app
-ynh_app_setting_set $app is_public $is_public
+ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 
 #=================================================
 # RELOAD NGINX
