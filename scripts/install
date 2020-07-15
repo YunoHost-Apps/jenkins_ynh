@@ -187,7 +187,7 @@ do
 	fi
 done
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -remoting -s http://$domain$path_url"
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url}"
 
 # Install plugins for http authentication and ldap.
 $jenkins_cli install-plugin reverse-proxy-auth-plugin

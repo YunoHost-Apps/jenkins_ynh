@@ -5,15 +5,13 @@
 
 *[Lire ce readme en français.](./README_fr.md)*
 
-> **This package doesn't work anymore on debian Jessie, because the last jenkins version which works on Jessie was 2.46.3, but the plugins aren't available anymore for this version.**
-
 > *This package allow you to install jenkins quickly and simply on a YunoHost server.  
 If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to know how to install and enjoy it.*
 
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
 
-**Shipped version:** 2.164.2
+**Shipped version:** 2.235.1
 
 ## Screenshots
 
