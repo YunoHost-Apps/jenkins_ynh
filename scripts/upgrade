@@ -160,19 +160,24 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.phar..."
 
-wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
 ynh_script_progression --message="Upgrading plugins..." --weight=40
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url}"
+ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -e ')$' | awk '{ print $1 }' )
 
 if [ -n "${UPDATE_LIST}" ]; then 
     $jenkins_cli install-plugin "${UPDATE_LIST}"
 fi
+
+ynh_replace_string --match_string="<useSecurity>false</useSecurity>" --replace_string="<useSecurity>true</useSecurity>" --target_file=/var/lib/jenkins/config.xml
 
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 

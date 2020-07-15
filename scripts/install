@@ -175,7 +175,7 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 ynh_script_progression --message="Installing plugins..." --weight=60
 
 # If the log says that jenkins has started, install the plugins
-wget -nv --no-check-certificate https://$domain$path_url/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
 for i in `seq 1 $timeout`
 do
 	# Wait for an update of plugin repositories
@@ -187,7 +187,10 @@ do
 	fi
 done
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url}"
+ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
+ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+
+jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 
 # Install plugins for http authentication and ldap.
 $jenkins_cli install-plugin reverse-proxy-auth-plugin
