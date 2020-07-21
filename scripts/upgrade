@@ -156,6 +156,13 @@ ynh_script_progression --message="Restarting Jenkins..." --weight=25
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 #=================================================
+# DEACTIVE MAINTENANCE MODE
+#=================================================
+ynh_script_progression --message="Disabling maintenance mode..." --weight=6
+
+ynh_maintenance_mode_OFF
+
+#=================================================
 # UPGRADE JENKINS-CLI.PHAR
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.phar..."
@@ -167,26 +174,21 @@ wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cl
 #=================================================
 ynh_script_progression --message="Upgrading plugins..." --weight=40
 
+cp /var/lib/jenkins/config.xml /var/lib/jenkins/config.xml.bak
+
 ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -e ')$' | awk '{ print $1 }' )
 
-if [ -n "${UPDATE_LIST}" ]; then 
-    $jenkins_cli install-plugin "${UPDATE_LIST}"
-fi
+for plugin in ${UPDATE_LIST}
+do
+	$jenkins_cli install-plugin "$plugin" || true
+done
 
-ynh_replace_string --match_string="<useSecurity>false</useSecurity>" --replace_string="<useSecurity>true</useSecurity>" --target_file=/var/lib/jenkins/config.xml
-
+mv /var/lib/jenkins/config.xml.bak /var/lib/jenkins/config.xml
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
-
-#=================================================
-# DEACTIVE MAINTENANCE MODE
-#=================================================
-ynh_script_progression --message="Disabling maintenance mode..." --weight=6
-
-ynh_maintenance_mode_OFF
 
 #=================================================
 # SEND A README FOR THE ADMIN
