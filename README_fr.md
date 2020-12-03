@@ -23,7 +23,7 @@ Aucune démo pour cette application.
 
 ## Configuration
 
-Utiliser le panneau d'administration de votre Jenkins pour configurer cette application.
+Utiliser le panneau d'administration de Jenkins pour configurer cette application.
 
 ## Documentation
 

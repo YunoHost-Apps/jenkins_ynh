@@ -12,7 +12,7 @@
 				"name": "is_public",
 				"type": "boolean",
 				"ask": {
-					"en": "Is it a public app ?"
+					"en": "Is it a public app?"
 				},
 				"default": true
 			}

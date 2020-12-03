@@ -8,7 +8,7 @@
 			"name": "Public access",
 			"id": "is_public",
 			"options": [{
-				"name": "Is it a public app ?",
+				"name": "Is it a public app?",
 				"id": "is_public",
 				"type": "bool",
 				"default": true
@@ -18,7 +18,7 @@
 			"name": "Overwriting config files",
 			"id": "overwrite_files",
 			"options": [{
-				"name": "Overwrite the nginx config file ?",
+				"name": "Overwrite the NGINX config file?",
 				"help": "If the file is overwritten, a backup will be created.",
 				"id": "overwrite_nginx",
 				"type": "bool",
@@ -29,7 +29,7 @@
 			"name": "Global configuration",
 			"id": "global_config",
 			"options": [{
-				"name": "Send HTML email to admin ?",
+				"name": "Send HTML email to admin?",
 				"help": "Allow app scripts to send HTML mails instead of plain text.",
 				"id": "email_type",
 				"type": "bool",
