@@ -5,13 +5,13 @@
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer jenkins rapidement et simplement sur un serveur YunoHost.  
+> *Ce package vous permet d'installer Jenkins rapidement et simplement sur un serveur YunoHost.  
 Si vous n'avez pas YunoHost, merci de regarder [ici](https://yunohost.org/#/install_fr) pour savoir comment l'installer et en profiter.*
 
-## Résumé
+## Vue d'ensemble
 Premier serveur d'automatisation open source, Jenkins fournit des centaines de plugins pour supporter la construction, le déploiement et l'automatisation de n'importe quel projet.
 
-**Version embarquée:** 2.235.2
+**Version embarquée :** 2.263.1
 
 ## Captures d'écran
 
@@ -27,8 +27,8 @@ Utiliser le panneau d'administration de votre Jenkins pour configurer cette appl
 
 ## Documentation
 
- * Documentation officielle: https://jenkins.io/doc/
- * Documentation YunoHost: Il n'y a pas d'autre documentation, n'hésitez pas à contribuer.
+ * Documentation officielle : https://jenkins.io/doc/
+ * Documentation YunoHost : Il n'y a pas d'autre documentation, n'hésitez pas à contribuer.
 
 ## Fonctionnalités spécifiques à YunoHost
 
@@ -38,27 +38,23 @@ Supportée, avec LDAP et SSO.
 
 #### Architectures supportées.
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
-
-* Ne peut pas être mis à jour après la version actuelle 2.46, car il a besoin de certains paquets qui ne sont pas disponibles sur jessie.
 
 ## Informations additionnelles
 
 ## Liens
 
- * Reporter un bug: https://github.com/YunoHost-Apps/jenkins_ynh/issues
- * Site de jenkins: https://jenkins.io
- * Dépôt git de jenkins: https://github.com/jenkinsci/jenkins
- * Site de YunoHost: https://yunohost.org/
+ * Reporter un bug : https://github.com/YunoHost-Apps/jenkins_ynh/issues
+ * Site de jenkins : https://jenkins.io
+ * Dépôt git de Jenkins : https://github.com/jenkinsci/jenkins
+ * Site de YunoHost : https://yunohost.org/
 
 ---
 
-Informations à l'intention des développeurs
-----------------
+## Informations à l'intention des développeurs
 
 Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
 

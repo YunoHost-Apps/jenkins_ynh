@@ -44,9 +44,9 @@ ynh_secure_remove --file="/var/lib/jenkins"
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Removing nginx web server configuration..." --weight=2
+ynh_script_progression --message="Removing NGINX web server configuration..." --weight=2
 
-# Remove the dedicated nginx config
+# Remove the dedicated NGINX config
 ynh_remove_nginx_config
 
 #=================================================

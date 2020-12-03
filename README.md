@@ -5,13 +5,13 @@
 
 *[Lire ce readme en français.](./README_fr.md)*
 
-> *This package allow you to install jenkins quickly and simply on a YunoHost server.  
+> *This package allow you to install Jenkins quickly and simply on a YunoHost server.  
 If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to know how to install and enjoy it.*
 
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
 
-**Shipped version:** 2.235.2
+**Shipped version:** 2.263.1
 
 ## Screenshots
 
@@ -38,13 +38,10 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64b - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-* Jessie x86-64b - [![](https://ci-stretch.nohost.me/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-stretch.nohost.me/ci/apps/jenkins/)
 
 ## Limitations
-
-* Can't be updated after the current version 2.46, because it need some packages not available on jessie.
 
 ## Additionnal informations
 
@@ -57,8 +54,7 @@ Supported, with LDAP and SSO.
 
 ---
 
-Developers infos
-----------------
+## Developers infos
 
 Please do your pull request to the [testing branch](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
 
