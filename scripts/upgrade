@@ -192,7 +192,7 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add $app --log /var/log/$app/$app.log
+yunohost service add $app --log=/var/log/$app/$app.log
 
 #=================================================
 # SEND A README FOR THE ADMIN

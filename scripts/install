@@ -148,7 +148,7 @@ yunohost app ssowatconf
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add $app --log /var/log/$app/$app.log
+yunohost service add $app --log=/var/log/$app/$app.log
 
 #=================================================
 # CHECK JENKINS STARTING
