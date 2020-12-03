@@ -8,8 +8,6 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-# Load common variables for all scripts.
-source _variables
 
 #=================================================
 # LOAD SETTINGS
@@ -167,7 +165,7 @@ ynh_maintenance_mode_OFF
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.phar..."
 
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar 2>&1
 
 #=================================================
 # UPGRADE PLUGINS
@@ -189,6 +187,12 @@ done
 
 mv /var/lib/jenkins/config.xml.bak /var/lib/jenkins/config.xml
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+
+#=================================================
+# ADVERTISE SERVICE IN ADMIN PANEL
+#=================================================
+
+yunohost service add $app --log /var/log/$app/$app.log
 
 #=================================================
 # SEND A README FOR THE ADMIN
