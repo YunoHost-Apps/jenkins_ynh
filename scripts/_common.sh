@@ -4,7 +4,7 @@
 # COMMON VARIABLES
 #=================================================
 
-app_depencencies="default-jre-headless daemon net-tools"
+app_depencencies="openjdk-11-jdk daemon net-tools"
 
 #=================================================
 # PERSONAL HELPERS
