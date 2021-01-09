@@ -1,7 +1,7 @@
 # Jenkins for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
-[![Install Jenkins with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=jenkins)
+[![Install Jenkins with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Lire ce readme en français.](./README_fr.md)*
 
@@ -11,7 +11,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
 
-**Shipped version:** 2.235.2
+**Shipped version:** 2.263.1
 
 ## Screenshots
 
@@ -42,8 +42,6 @@ Supported, with LDAP and SSO.
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
 
 ## Limitations
-
-* Can't be updated after the current version 2.46, because it need some packages not available on jessie.
 
 ## Additionnal informations
 
