@@ -11,7 +11,7 @@ If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
 
-**Shipped version:** 2.235.2
+**Shipped version:** 2.263.1
 
 ## Screenshots
 
@@ -42,8 +42,6 @@ Supported, with LDAP and SSO.
 * ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
 
 ## Limitations
-
-* Can't be updated after the current version 2.46, because it need some packages not available on jessie.
 
 ## Additionnal informations
 

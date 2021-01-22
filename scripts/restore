@@ -8,11 +8,6 @@
 
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
-# Load common variables for all scripts.
-source ../settings/scripts/_variables
-
-# Source the version 3.6 of ynh_setup_source which allow this helper to be used in restore script
-source ../settings/scripts/_ynh_setup_source_fix.sh
 
 #=================================================
 # MANAGE SCRIPT FAILURE
@@ -123,7 +118,7 @@ ynh_restore_file --origin_path=/etc/default/$app
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add $app --log "/var/log/$app/$app.log"
+yunohost service add $app --log="/var/log/$app/$app.log"
 
 #=================================================
 # CHECK JENKINS STARTING

@@ -8,8 +8,6 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-# Load common variables for all scripts.
-source _variables
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -82,9 +80,9 @@ ynh_install_app_dependencies $app_depencencies
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring nginx web server..." --weight=2
+ynh_script_progression --message="Configuring NGINX web server..." --weight=2
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
@@ -150,7 +148,7 @@ yunohost app ssowatconf
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add $app --log /var/log/$app/$app.log
+yunohost service add $app --log=/var/log/$app/$app.log
 
 #=================================================
 # CHECK JENKINS STARTING
@@ -175,7 +173,7 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 ynh_script_progression --message="Installing plugins..." --weight=60
 
 # If the log says that jenkins has started, install the plugins
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar 2>&1
 for i in `seq 1 $timeout`
 do
 	# Wait for an update of plugin repositories
