@@ -1,30 +1,14 @@
 #!/bin/bash
 
 #=================================================
+# COMMON VARIABLES
+#=================================================
+
+app_depencencies="openjdk-11-jdk daemon net-tools"
+
+#=================================================
 # PERSONAL HELPERS
 #=================================================
-
-#=================================================
-# BACKUP
-#=================================================
-
-HUMAN_SIZE () {	# Transforme une taille en Ko en une taille lisible pour un humain
-	human=$(numfmt --to=iec --from-unit=1K $1)
-	echo $human
-}
-
-CHECK_SIZE () {	# Vérifie avant chaque backup que l'espace est suffisant
-	file_to_analyse=$1
-	backup_size=$(du --summarize "$file_to_analyse" | cut -f1)
-	free_space=$(df --output=avail "/home/yunohost.backup" | sed 1d)
-
-	if [ $free_space -le $backup_size ]
-	then
-		ynh_print_err "Espace insuffisant pour sauvegarder $file_to_analyse."
-		ynh_print_err "Espace disponible: $(HUMAN_SIZE $free_space)"
-		ynh_die "Espace nécessaire: $(HUMAN_SIZE $backup_size)"
-	fi
-}
 
 #=================================================
 # PACKAGE CHECK BYPASSING...
@@ -69,7 +53,7 @@ ynh_multimedia_build_main_dir () {
 	local checksum="806a827ba1902d6911095602a9221181"
 
 	# Download yunohost.multimedia scripts
-	wget -nv https://github.com/YunoHost-Apps/yunohost.multimedia/archive/${ynh_media_release}.tar.gz
+	wget -nv https://github.com/YunoHost-Apps/yunohost.multimedia/archive/${ynh_media_release}.tar.gz 2>&1
 
 	# Check the control sum
 	echo "${checksum} ${ynh_media_release}.tar.gz" | md5sum -c --status \

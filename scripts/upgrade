@@ -8,8 +8,6 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
-# Load common variables for all scripts.
-source _variables
 
 #=================================================
 # LOAD SETTINGS
@@ -33,7 +31,7 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=2
 
 # Fix is_public as a boolean
 if [ "$is_public" = "Yes" ]; then
@@ -122,9 +120,9 @@ ynh_install_app_dependencies $app_depencencies
 # Overwrite the nginx configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
-	ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=4
+	ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=4
 
-	# Create a dedicated nginx config
+	# Create a dedicated NGINX config
 	ynh_add_nginx_config
 fi
 
@@ -143,7 +141,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --weight=2
+ynh_script_progression --message="Reloading NGINX web server..." --weight=2
 
 ynh_systemd_action --action=reload --service_name=nginx
 
@@ -167,7 +165,7 @@ ynh_maintenance_mode_OFF
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.phar..."
 
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar 2>&1
 
 #=================================================
 # UPGRADE PLUGINS
@@ -189,6 +187,12 @@ done
 
 mv /var/lib/jenkins/config.xml.bak /var/lib/jenkins/config.xml
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+
+#=================================================
+# ADVERTISE SERVICE IN ADMIN PANEL
+#=================================================
+
+yunohost service add $app --log=/var/log/$app/$app.log
 
 #=================================================
 # SEND A README FOR THE ADMIN
