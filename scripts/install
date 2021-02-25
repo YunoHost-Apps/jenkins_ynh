@@ -1,16 +1,17 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
 source _common.sh
+source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE FAILURE OF THE SCRIPT
+# MANAGE SCRIPT FAILURE
 #=================================================
 
 ynh_clean_setup () {
@@ -36,7 +37,7 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 app=$YNH_APP_INSTANCE_NAME
 
 #=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THIS ARGS
+# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
 ynh_script_progression --message="Validating installation parameters..."
 
@@ -53,9 +54,6 @@ ynh_script_progression --message="Storing installation settings..." --weight=3
 
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
-
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
 ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 
@@ -66,7 +64,7 @@ ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 #=================================================
 ynh_script_progression --message="Finding an available port..." --weight=2
 
-# Find a free port
+# Find an available port
 port=$(ynh_find_port --port=8080)
 ynh_app_setting_set --app=$app --key=port --value=$port
 
@@ -75,7 +73,16 @@ ynh_app_setting_set --app=$app --key=port --value=$port
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --weight=30
 
-ynh_install_app_dependencies $app_depencencies
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+ynh_script_progression --message="Setting up source files..."
+
+ynh_app_setting_set --app=$app --key=final_path --value=$final_path
+# Download, check integrity, uncompress and patch the source from app.src
+ynh_setup_source --dest_dir="../conf"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -116,13 +123,19 @@ pid_change_port=$!
 ynh_script_progression --message="Installing Jenkins..." --weight=30
 
 # Download jenkins deb file and install it.
-ynh_setup_source --dest_dir="../conf"
 dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
-# SETUP JENKINS
+# SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Configuring Jenkins..."
+ynh_script_progression --message="Setuping application..." --weight=30
+
+# Set the app as temporarily public for jenkins-cli.jar
+ynh_script_progression --message="Configuring SSOwat..."
+# Making the app public for curl
+ynh_permission_update --permission="main" --add="visitors"
+# Reload SSOwat config
+yunohost app ssowatconf
 
 # Ignore Setup Wizard
 ynh_replace_string --match_string="\-Djava.awt.headless=true" --replace_string="& -Djenkins.install.runSetupWizard=false" --target_file=/etc/default/jenkins
@@ -132,28 +145,6 @@ then
 	# Add the path, in case of sub-path installation, into jenkins' boot options
 	sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
 fi
-
-#=================================================
-# FORCE PUBLIC ACCESS
-#=================================================
-ynh_script_progression --message="Forcing public access for the installation..." --weight=5
-
-# Jenkins has to be public, at least for jenkins-cli.jar
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-
-ynh_systemd_action --action=reload --service_name=nginx
-yunohost app ssowatconf
-
-#=================================================
-# ADVERTISE SERVICE IN ADMIN PANEL
-#=================================================
-
-yunohost service add $app --log=/var/log/$app/$app.log
-
-#=================================================
-# CHECK JENKINS STARTING
-#=================================================
-ynh_script_progression --message="Starting Jenkins..." --weight=25
 
 config_OK=0
 timeout=3600
@@ -184,6 +175,9 @@ do
 		sleep 1
 	fi
 done
+
+# Remove the public access
+ynh_permission_update --permission="main" --remove="visitors"
 
 ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
 ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -217,36 +211,80 @@ $jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
 # Install extra comfort plugins
 # Handle terminal colours. Enhance the readability of the terminal.
 $jenkins_cli install-plugin ansicolor
-# MOnitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
+# Monitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
 $jenkins_cli install-plugin fstrigger
 
 # Set global security with ldap
 cp ../conf/config.xml /var/lib/jenkins/
 chown jenkins: /var/lib/jenkins/config.xml
 
-ynh_script_progression --message="Restarting Jenkins..." --weight=20
+# Clean hosts file
+sed -i '/#jenkins/d' /etc/hosts
 
-# Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+#=================================================
+# STORE THE CONFIG FILE CHECKSUM
+#=================================================
+ynh_script_progression --message="Storing the config file checksum..."
+
+# Calculate and store the config file checksum into the app settings
+ynh_store_file_checksum --file="/etc/default/jenkins"
+ynh_store_file_checksum --file="/var/lib/jenkins/config.xml"
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+ynh_script_progression --message="Securing files and directories..."
+
+# Set permissions to app files
+chown -R $app:$app $final_path
+
+#=================================================
+# SETUP LOGROTATE
+#=================================================
+ynh_script_progression --message="Configuring log rotation..."
+
+# Use logrotate to manage application logfile(s)
+ynh_use_logrotate
+
+#=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..."
+
+yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..." --weight=20
+
+# Start a systemd service
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..." --weight=9
+ynh_script_progression --message="Configuring permissions..." --weight=9
 
-if [ $is_public -eq 0 ]
+# Make app public if necessary
+if [ $is_public -eq 1 ]
 then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-	# /path/github-webhook has to be accessible for github's webhooks
-	ynh_app_setting_set --app=$app --key=skipped_uris --value="/github-webhook"
+	# Everyone can access the app.
+	# The "main" permission is automatically created before the install script.
+	ynh_permission_update --permission="main" --add="visitors"
 fi
 
-#=================================================
-# CLEAN HOSTS FILE
-#=================================================
+# /path/github-webhook has to be accessible for github's webhooks
+ynh_permission_create --permission="github-webhook" --url "/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
 
-sed -i '/#jenkins/d' /etc/hosts
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..."
+
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # SEND A README FOR THE ADMIN

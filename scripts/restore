@@ -6,7 +6,10 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
+source ../settings/scripts/ynh_maintenance_mode
+source ../settings/scripts/ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -52,21 +55,23 @@ ynh_script_progression --message="Activating maintenance mode..." --weight=2
 ynh_maintenance_mode_ON
 
 #=================================================
-# STANDARD RESTORE STEPS
+# STANDARD RESTORATION STEPS
 #=================================================
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Restoring the nginx configuration..."
 
 ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# SPECIFIC RESTORE
+# SPECIFIC RESTORATION
 #=================================================
 # REINSTALL DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Reinstalling dependencies..." --weight=20
 
-ynh_install_app_dependencies $app_depencencies
+# Define and install dependencies
+ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # FIX THE PORT TO USE
@@ -115,18 +120,18 @@ ynh_secure_remove --file="/etc/default/jenkins"
 ynh_restore_file --origin_path=/etc/default/$app
 
 #=================================================
-# ADVERTISE SERVICE IN ADMIN PANEL
+# INTEGRATE SERVICE IN YUNOHOST
 #=================================================
+ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
 
 #=================================================
-# CHECK JENKINS STARTING
+# START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Restarting Jenkins..." --weight=20
+ynh_script_progression --message="Starting a systemd service..." --weight=20
 
-# Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
@@ -148,6 +153,22 @@ You can also find some specific actions for this app by using the experimental _
 If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__." > mail_to_send
 
 ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=restore
+
+#=================================================
+# RESTORE THE LOGROTATE CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the logrotate configuration..."
+
+ynh_restore_file --origin_path="/etc/logrotate.d/$app"
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..."
+
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
