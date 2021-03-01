@@ -151,7 +151,7 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 ynh_script_progression --message="Reloading NGINX web server..." --weight=2
 
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # CHECK JENKINS STARTING
@@ -159,7 +159,7 @@ ynh_systemd_action --action=reload --service_name=nginx
 ynh_script_progression --message="Restarting Jenkins..." --weight=25
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
@@ -183,7 +183,7 @@ ynh_script_progression --message="Upgrading plugins..." --weight=40
 cp /var/lib/jenkins/config.xml /var/lib/jenkins/config.xml.bak
 
 ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -e ')$' | awk '{ print $1 }' )

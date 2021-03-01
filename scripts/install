@@ -152,14 +152,14 @@ timeout=3600
 echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 # Enable Jenkins CLI Protocol/2 for jenkins-cli
 # That the only protocol that allow connection without an authenticated user...
 ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=/var/lib/jenkins/config.xml
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 ynh_script_progression --message="Installing plugins..." --weight=60
 
@@ -180,7 +180,7 @@ done
 ynh_permission_update --permission="main" --remove="visitors"
 
 ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 
