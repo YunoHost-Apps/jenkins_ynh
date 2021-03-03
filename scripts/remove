@@ -17,6 +17,7 @@ ynh_script_progression --message="Loading installation settings..." --weight=4
 app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 #=================================================
 # STANDARD REMOVE
@@ -43,7 +44,7 @@ ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB
 #=================================================
 ynh_script_progression --message="Removing dependencies..." --weight=20
 
-ynh_apt purge jenkins
+ynh_package_autopurge $app
 # Remove metapackage and its dependencies
 ynh_remove_app_dependencies
 
