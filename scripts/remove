@@ -44,8 +44,8 @@ ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB
 #=================================================
 ynh_script_progression --message="Removing dependencies..." --weight=20
 
-ynh_package_autopurge $app
 # Remove metapackage and its dependencies
+ynh_package_autopurge $app
 ynh_remove_app_dependencies
 
 #=================================================
@@ -63,6 +63,19 @@ ynh_script_progression --message="Removing NGINX web server configuration..." --
 
 # Remove the dedicated NGINX config
 ynh_remove_nginx_config
+
+#=================================================
+# SPECIFIC REMOVE
+#=================================================
+# REMOVE VARIOUS FILES
+#=================================================
+ynh_script_progression --message="Removing various files..."
+
+# Remove a directory securely
+ynh_secure_remove --file="/etc/default/jenkins"
+
+# Remove the log files
+ynh_secure_remove --file="/var/log/$app"
 
 #=================================================
 # END OF SCRIPT
