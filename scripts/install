@@ -156,7 +156,7 @@ ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins 
 
 # Enable Jenkins CLI Protocol/2 for jenkins-cli
 # That the only protocol that allow connection without an authenticated user...
-ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=/var/lib/jenkins/config.xml
+ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=$final_path/config.xml
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -164,11 +164,11 @@ ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins 
 ynh_script_progression --message="Installing plugins..." --weight=60
 
 # If the log says that jenkins has started, install the plugins
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar 2>&1
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar 2>&1
 for i in `seq 1 $timeout`
 do
 	# Wait for an update of plugin repositories
-	if test -e /var/lib/jenkins/updates/default.json; then
+	if test -e $final_path/updates/default.json; then
 		break;
 	else
 		echo -n "."
@@ -179,10 +179,10 @@ done
 # Remove the public access
 ynh_permission_update --permission="main" --remove="visitors"
 
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
+ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
+jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 
 # Install plugins for http authentication and ldap.
 $jenkins_cli install-plugin reverse-proxy-auth-plugin
@@ -215,8 +215,8 @@ $jenkins_cli install-plugin ansicolor
 $jenkins_cli install-plugin fstrigger
 
 # Set global security with ldap
-cp ../conf/config.xml /var/lib/jenkins/
-chown jenkins: /var/lib/jenkins/config.xml
+cp ../conf/config.xml $final_path/
+chown jenkins: $final_path/config.xml
 
 # Clean hosts file
 sed -i '/#jenkins/d' /etc/hosts
@@ -228,7 +228,7 @@ ynh_script_progression --message="Storing the config file checksum..."
 
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum --file="/etc/default/jenkins"
-ynh_store_file_checksum --file="/var/lib/jenkins/config.xml"
+ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION

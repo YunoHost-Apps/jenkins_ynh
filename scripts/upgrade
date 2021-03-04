@@ -97,7 +97,7 @@ ynh_script_progression --message="Activating maintenance mode..." --weight=2
 ynh_maintenance_mode_ON
 
 ynh_backup_if_checksum_is_different --file="/etc/default/jenkins"
-ynh_backup_if_checksum_is_different --file="/var/lib/jenkins/config.xml"
+ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -182,19 +182,19 @@ ynh_maintenance_mode_OFF
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.phar..."
 
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar 2>&1
+wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar 2>&1
 
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
 ynh_script_progression --message="Upgrading plugins..." --weight=40
 
-cp /var/lib/jenkins/config.xml /var/lib/jenkins/config.xml.bak
+cp $final_path/config.xml $final_path/config.xml.bak
 
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
+ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
+jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -oP '^(.*?) ')
 
 for plugin in ${UPDATE_LIST}
@@ -202,11 +202,11 @@ do
 	$jenkins_cli install-plugin "$plugin" || true
 done
 
-mv /var/lib/jenkins/config.xml.bak /var/lib/jenkins/config.xml
+mv $final_path/config.xml.bak $final_path/config.xml
 
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum --file="/etc/default/jenkins"
-ynh_store_file_checksum --file="/var/lib/jenkins/config.xml"
+ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
