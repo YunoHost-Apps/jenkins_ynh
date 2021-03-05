@@ -1,12 +1,14 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
 source _common.sh
+source ynh_maintenance_mode
+source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -18,13 +20,14 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 port=$(ynh_app_setting_get --app=$app --key=port)
 overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
 
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -59,6 +62,18 @@ then
 	apt-get update
 fi
 
+# Cleaning legacy permissions
+if ynh_legacy_permissions_exists; then
+	ynh_legacy_permissions_delete_all
+
+	ynh_app_setting_delete --app=$app --key=is_public
+fi
+
+# Create a permission if needed
+if ! ynh_permission_exists --permission="github-webhook"; then
+	ynh_permission_create --permission="github-webhook" --url "/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
+fi
+
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
@@ -81,13 +96,25 @@ ynh_script_progression --message="Activating maintenance mode..." --weight=2
 
 ynh_maintenance_mode_ON
 
+ynh_backup_if_checksum_is_different --file="/etc/default/jenkins"
+ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
+
 #=================================================
-# UPGRADE JENKINS
+# STANDARD UPGRADE STEPS
+#=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Stopping a systemd service..."
+
+ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB" --log_path="systemd"
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrading Jenkins..." --weight=40
+	ynh_script_progression --message="Upgrading source files..." --weight=40
 	# Download jenkins deb file and install it.
 	ynh_setup_source --dest_dir="../conf"
 	dpkg --install --force-confnew ../conf/jenkins.deb
@@ -107,13 +134,6 @@ then
 fi
 
 #=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=12
-
-ynh_install_app_dependencies $app_depencencies
-
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
@@ -127,23 +147,20 @@ then
 fi
 
 #=================================================
-# SETUP SSOWAT
+# UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..."
+ynh_script_progression --message="Upgrading dependencies..." --weight=12
 
-if [ $is_public -eq 1 ]
-then
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-else
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-fi
+ynh_install_app_dependencies $pkg_dependencies
 
+#=================================================
+# SPECIFIC UPGRADE
 #=================================================
 # RELOAD NGINX
 #=================================================
 ynh_script_progression --message="Reloading NGINX web server..." --weight=2
 
-ynh_systemd_action --action=reload --service_name=nginx
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # CHECK JENKINS STARTING
@@ -151,7 +168,7 @@ ynh_systemd_action --action=reload --service_name=nginx
 ynh_script_progression --message="Restarting Jenkins..." --weight=25
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
 #=================================================
 # DEACTIVE MAINTENANCE MODE
@@ -165,35 +182,56 @@ ynh_maintenance_mode_OFF
 #=================================================
 ynh_script_progression --message="Upgrading jenkins-cli.jar..."
 
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O /var/lib/jenkins/jenkins-cli.jar.temp 2>&1
-cp -f /var/lib/jenkins/jenkins-cli.jar.temp /var/lib/jenkins/jenkins-cli.jar
+wget -nv --no-check-certificate https://127.0.0.1${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar.temp 2>&1
+mv -f $final_path/jenkins-cli.jar.temp $final_path/jenkins-cli.jar
 
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
 ynh_script_progression --message="Upgrading plugins..." --weight=40
 
-cp /var/lib/jenkins/config.xml /var/lib/jenkins/config.xml.bak
+cp $final_path/config.xml $final_path/config.xml.bak
 
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=/var/lib/jenkins/config.xml
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
 
-jenkins_cli="ynh_exec_warn_less java -jar /var/lib/jenkins/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
-UPDATE_LIST=$($jenkins_cli list-plugins | grep -e ')$' | awk '{ print $1 }' )
+jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
+UPDATE_LIST=$($jenkins_cli list-plugins | grep -oP '^(.*?) ')
 
 for plugin in ${UPDATE_LIST}
 do
 	$jenkins_cli install-plugin "$plugin" || true
 done
 
-mv /var/lib/jenkins/config.xml.bak /var/lib/jenkins/config.xml
-ynh_systemd_action --action=restart --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+mv $final_path/config.xml.bak $final_path/config.xml
+
+# Calculate and store the config file checksum into the app settings
+ynh_store_file_checksum --file="/etc/default/jenkins"
+ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
-# ADVERTISE SERVICE IN ADMIN PANEL
+# GENERIC FINALIZATION
 #=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+ynh_script_progression --message="Securing files and directories..."
 
-yunohost service add $app --log=/var/log/$app/$app.log
+# Set permissions on app files
+chown -R $app:$app $final_path
+
+#=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..."
+
+yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..."
+
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # SEND A README FOR THE ADMIN
@@ -202,20 +240,19 @@ yunohost service add $app --log=/var/log/$app/$app.log
 # Get main domain and buid the url of the admin panel of the app.
 admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
 
-# Build the changelog
-ynh_app_changelog || true
-
 echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
 You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
 
-If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__.
-
----
-
-Changelog since your last upgrade:
-$(cat changelog)" > mail_to_send
+If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__." > mail_to_send
 
 ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=upgrade
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..."
+
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT

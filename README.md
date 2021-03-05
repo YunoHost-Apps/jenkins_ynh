@@ -5,8 +5,8 @@
 
 *[Lire ce readme en français.](./README_fr.md)*
 
-> *This package allow you to install Jenkins quickly and simply on a YunoHost server.  
-If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to know how to install and enjoy it.*
+> *This package allows you to install Jenkins quickly and simply on a YunoHost server.  
+If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/install) to learn how to install it.*
 
 ## Overview
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project.
@@ -28,35 +28,30 @@ Use the admin panel of your Jenkins to configure this app.
 ## Documentation
 
  * Official documentation: https://jenkins.io/doc/
- * YunoHost documentation: There no other documentations, feel free to contribute.
 
 ## YunoHost specific features
 
-#### Multi-users support
+#### Multi-user support
 
 Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64 - [![](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
-* ARMv8-A - [![](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-
-## Limitations
-
-## Additionnal informations
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
 
 ## Links
 
  * Report a bug: https://github.com/YunoHost-Apps/jenkins_ynh/issues
- * Jenkins website: https://jenkins.io
- * Jenkins repository: https://github.com/jenkinsci/jenkins
+ * App website: https://jenkins.io
+ * Upstream app repository: https://github.com/jenkinsci/jenkins
  * YunoHost website: https://yunohost.org/
 
 ---
 
-## Developers infos
+## Developer info
 
-Please do your pull request to the [testing branch](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
+Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
 
 To try the testing branch, please proceed like that.
 ```
