@@ -24,7 +24,7 @@ Email=
 Notification=down
 ;;; Upgrade options
 	; commit=29141b702f2954e0f72925121aea82a7fa3fc118
-		name= Fix for getopts 13 Apr 2019
+		name=Fix for getopts 13 Apr 2019
 		manifest_arg=domain=DOMAIN&path=PATH&is_public=1&
 	; commit=0e1aae7be82034650e2c1f6c1ad6d68a41b80176
 		name=2.263.1~ynh1

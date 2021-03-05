@@ -178,11 +178,12 @@ ynh_script_progression --message="Disabling maintenance mode..." --weight=6
 ynh_maintenance_mode_OFF
 
 #=================================================
-# UPGRADE JENKINS-CLI.PHAR
+# UPGRADE JENKINS-CLI.JAR
 #=================================================
-ynh_script_progression --message="Upgrading jenkins-cli.phar..."
+ynh_script_progression --message="Upgrading jenkins-cli.jar..."
 
-wget -nv --no-check-certificate https://127.0.0.1${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar 2>&1
+wget -nv --no-check-certificate https://127.0.0.1${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar.temp 2>&1
+mv -f $final_path/jenkins-cli.jar.temp $final_path/jenkins-cli.jar
 
 #=================================================
 # UPGRADE PLUGINS
