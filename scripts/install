@@ -53,7 +53,6 @@ ynh_script_progression --message="Storing installation settings..." --weight=3
 
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
@@ -139,7 +138,7 @@ fi
 ynh_script_progression --message="Forcing public access for the installation..." --weight=5
 
 # Jenkins has to be public, at least for jenkins-cli.jar
-ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
+
 
 ynh_systemd_action --action=reload --service_name=nginx
 yunohost app ssowatconf
@@ -234,12 +233,11 @@ ynh_systemd_action --action=restart --line_match="Jenkins is fully up and runnin
 #=================================================
 ynh_script_progression --message="Configuring SSOwat..." --weight=9
 
-if [ $is_public -eq 0 ]
+
+# Make app public if necessary
+if [ "$is_public" -eq 1 ]
 then
-	# Remove the public access
-	ynh_app_setting_delete --app=$app --key=unprotected_uris
-	# /path/github-webhook has to be accessible for github's webhooks
-	ynh_app_setting_set --app=$app --key=skipped_uris --value="/github-webhook"
+	ynh_permission_update --permission="main" --add="visitors"
 fi
 
 #=================================================
