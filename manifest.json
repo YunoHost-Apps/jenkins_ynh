@@ -29,29 +29,17 @@
             {
                 "name": "domain",
                 "type": "domain",
-                "ask": {
-                    "en": "Choose a domain for Jenkins",
-                    "fr": "Choisissez un domaine pour Jenkins"
-                },
                 "example": "example.com"
             },
             {
                 "name": "path",
                 "type": "path",
-                "ask": {
-                    "en": "Choose a path for Jenkins",
-                    "fr": "Choisissez un chemin pour Jenkins"
-                },
                 "example": "/jenkins",
                 "default": "/jenkins"
             },
             {
                 "name": "is_public",
                 "type": "boolean",
-                "ask": {
-                    "en": "Is it a public application?",
-                    "fr": "Est-ce une application publique ?"
-                },
                 "default": true,
                 "help": {
                     "en": "A public Jenkins will be accessible by everyone unless you configure the security into jenkins admin panel.",
