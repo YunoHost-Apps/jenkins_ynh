@@ -12,7 +12,7 @@
 		setup_public=1
 		upgrade=1
 		# 2.150.2~ynh2
-		upgrade=1	from_commit=29141b702f2954e0f72925121aea82a7fa3fc118
+		# upgrade=1	from_commit=29141b702f2954e0f72925121aea82a7fa3fc118
 		# 2.263.1~ynh1
 		upgrade=1	from_commit=0e1aae7be82034650e2c1f6c1ad6d68a41b80176
 		backup_restore=1
