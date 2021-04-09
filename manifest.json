@@ -6,7 +6,7 @@
         "en": "Extendable continuous integration server",
         "fr": "Serveur d'intégration continue extensible"
     },
-    "version": "2.277.2~ynh1",
+    "version": "2.277.2~ynh2",
     "url": "https://jenkins.io/index.html",
     "license": "MIT",
     "maintainer": {

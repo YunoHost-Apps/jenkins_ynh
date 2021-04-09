@@ -66,7 +66,7 @@ if ! ynh_permission_exists --permission="github-webhook"; then
 fi
 
 #=================================================
-# BACKUP BEFORE CHANGE URL THEN ACTIVE TRAP
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=40
 
@@ -202,14 +202,6 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-ynh_script_progression --message="Securing files and directories..."
-
-# Set permissions on app files
-chown -R $app:$app $final_path
-
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================

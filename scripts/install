@@ -233,14 +233,6 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-ynh_script_progression --message="Securing files and directories..."
-
-# Set permissions to app files
-chown -R $app:$app $final_path
-
-#=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
