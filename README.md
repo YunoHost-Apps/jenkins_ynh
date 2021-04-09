@@ -37,8 +37,8 @@ Supported, with LDAP and SSO.
 
 #### Supported architectures
 
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/jenkins%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/jenkins.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
 
 ## Links
 
