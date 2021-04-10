@@ -15,6 +15,8 @@
 		# upgrade=1	from_commit=29141b702f2954e0f72925121aea82a7fa3fc118
 		# 2.263.1~ynh1
 		upgrade=1	from_commit=0e1aae7be82034650e2c1f6c1ad6d68a41b80176
+		# 2.263.4~ynh1
+		upgrade=1	from_commit=72656bca2e144ef9a92cfec2af6cd13cb8e8aee3
 		backup_restore=1
 		multi_instance=0
 		port_already_use=1	(8080)
@@ -28,3 +30,5 @@ Notification=down
 		manifest_arg=domain=DOMAIN&path=PATH&is_public=1&
 	; commit=0e1aae7be82034650e2c1f6c1ad6d68a41b80176
 		name=2.263.1~ynh1
+	; commit=72656bca2e144ef9a92cfec2af6cd13cb8e8aee3
+		name=2.263.4~ynh1
