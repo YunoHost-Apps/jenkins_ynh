@@ -50,7 +50,7 @@ ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=3
+ynh_script_progression --message="Storing installation settings..."
 
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
@@ -62,7 +62,7 @@ ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 #=================================================
 # FIND AND OPEN A PORT
 #=================================================
-ynh_script_progression --message="Finding an available port..." --weight=2
+ynh_script_progression --message="Finding an available port..."
 
 # Find an available port
 port=$(ynh_find_port --port=8080)
@@ -71,7 +71,7 @@ ynh_app_setting_set --app=$app --key=port --value=$port
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=30
+ynh_script_progression --message="Installing dependencies..."
 
 ynh_install_app_dependencies $pkg_dependencies
 
@@ -87,7 +87,7 @@ ynh_setup_source --dest_dir="../conf"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=2
+ynh_script_progression --message="Configuring NGINX web server..."
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
@@ -97,7 +97,7 @@ ynh_add_nginx_config
 #=================================================
 # FIX THE PORT TO USE
 #=================================================
-ynh_script_progression --message="Fixing the port in Jenkins config..." --weight=2
+ynh_script_progression --message="Fixing the port in Jenkins config..."
 
 change_port() {
 	# Wait for the creation of the jenkins service file
@@ -120,7 +120,7 @@ pid_change_port=$!
 #=================================================
 # INSTALL JENKINS
 #=================================================
-ynh_script_progression --message="Installing Jenkins..." --weight=30
+ynh_script_progression --message="Installing Jenkins..."
 
 # Download jenkins deb file and install it.
 dpkg --install --force-confnew ../conf/jenkins.deb
@@ -128,7 +128,7 @@ dpkg --install --force-confnew ../conf/jenkins.deb
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setuping application..." --weight=30
+ynh_script_progression --message="Setuping application..."
 
 # Set the app as temporarily public for jenkins-cli.jar
 ynh_script_progression --message="Configuring SSOwat..."
@@ -161,7 +161,7 @@ ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace
 # Wait for Jenkins to be fully started
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
-ynh_script_progression --message="Installing plugins..." --weight=60
+ynh_script_progression --message="Installing plugins..."
 
 # If the log says that jenkins has started, install the plugins
 wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar 2>&1
@@ -242,7 +242,7 @@ yunohost service add $app --description="Extendable continuous integration serve
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=20
+ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
@@ -250,7 +250,7 @@ ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins 
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring permissions..." --weight=9
+ynh_script_progression --message="Configuring permissions..."
 
 # Make app public if necessary
 if [ $is_public -eq 1 ]
@@ -261,7 +261,7 @@ then
 fi
 
 # /path/github-webhook has to be accessible for github's webhooks
-ynh_permission_create --permission="github-webhook" --url "/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
+ynh_permission_create --permission="github-webhook" --url="/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
 
 #=================================================
 # RELOAD NGINX
@@ -288,4 +288,4 @@ ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression --message="Installation of $app completed"

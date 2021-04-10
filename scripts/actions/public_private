@@ -43,7 +43,7 @@ if [ $is_public -eq 0 ]; then
 else
 	public_private="public"
 fi
-ynh_script_progression --message="Moving the application to $public_private..." --weight=3
+ynh_script_progression --message="Moving the application to $public_private..."
 
 if [ $is_public -eq 0 ]
 then
@@ -73,4 +73,4 @@ ynh_systemd_action --service_name=nginx --action=reload
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Execution completed" --last
+ynh_script_progression --message="Execution completed"
