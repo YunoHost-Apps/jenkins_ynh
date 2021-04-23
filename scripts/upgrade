@@ -7,14 +7,13 @@
 #=================================================
 
 source _common.sh
-source ynh_maintenance_mode
 source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=4
+ynh_script_progression --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -34,7 +33,7 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=2
+ynh_script_progression --message="Ensuring downward compatibility..."
 
 # If overwrite_nginx doesn't exist, create it
 if [ -z "$overwrite_nginx" ]; then
@@ -68,24 +67,17 @@ fi
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=40
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..."
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
 	ynh_clean_check_starting
-	# restore it if the upgrade fails
+	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
-
-#=================================================
-# ACTIVATE MAINTENANCE MODE
-#=================================================
-ynh_script_progression --message="Activating maintenance mode..." --weight=2
-
-ynh_maintenance_mode_ON
 
 ynh_backup_if_checksum_is_different --file="/etc/default/jenkins"
 ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
@@ -105,7 +97,7 @@ ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrading source files..." --weight=40
+	ynh_script_progression --message="Upgrading source files..."
 	# Download jenkins deb file and install it.
 	ynh_setup_source --dest_dir="../conf"
 	dpkg --install --force-confnew ../conf/jenkins.deb
@@ -131,7 +123,7 @@ fi
 # Overwrite the nginx configuration only if it's allowed
 if [ $overwrite_nginx -eq 1 ]
 then
-	ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=4
+	ynh_script_progression --message="Upgrading NGINX web server configuration..."
 
 	# Create a dedicated NGINX config
 	ynh_add_nginx_config
@@ -140,7 +132,7 @@ fi
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=12
+ynh_script_progression --message="Upgrading dependencies..."
 
 ynh_install_app_dependencies $pkg_dependencies
 
@@ -149,24 +141,17 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=2
+ynh_script_progression --message="Reloading NGINX web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # CHECK JENKINS STARTING
 #=================================================
-ynh_script_progression --message="Restarting Jenkins..." --weight=25
+ynh_script_progression --message="Restarting Jenkins..."
 
 # Wait for Jenkins to be fully started
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
-
-#=================================================
-# DEACTIVE MAINTENANCE MODE
-#=================================================
-ynh_script_progression --message="Disabling maintenance mode..." --weight=6
-
-ynh_maintenance_mode_OFF
 
 #=================================================
 # UPGRADE JENKINS-CLI.JAR
@@ -179,7 +164,7 @@ mv -f $final_path/jenkins-cli.jar.temp $final_path/jenkins-cli.jar
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
-ynh_script_progression --message="Upgrading plugins..." --weight=40
+ynh_script_progression --message="Upgrading plugins..."
 
 cp $final_path/config.xml $final_path/config.xml.bak
 
@@ -202,14 +187,6 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-ynh_script_progression --message="Securing files and directories..."
-
-# Set permissions on app files
-chown -R $app:$app $final_path
-
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
@@ -249,4 +226,4 @@ ynh_systemd_action --service_name=nginx --action=reload
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression --message="Upgrade of $app completed"
