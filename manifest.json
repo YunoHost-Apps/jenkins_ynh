@@ -6,7 +6,7 @@
         "en": "Extendable continuous integration server",
         "fr": "Serveur d'intégration continue extensible"
     },
-    "version": "2.277.2~ynh1",
+    "version": "2.277.2~ynh2",
     "url": "https://jenkins.io/index.html",
     "license": "MIT",
     "maintainer": {
@@ -40,11 +40,7 @@
             {
                 "name": "is_public",
                 "type": "boolean",
-                "default": true,
-                "help": {
-                    "en": "A public Jenkins will be accessible by everyone unless you configure the security into jenkins admin panel.",
-                    "fr": "Un Jenkins public sera accessible par tout le monde à moins que vous ne configuriez la sécurité dans le panneau d'administration de jenkins."
-                }
+                "default": true
             }
         ]
     }
