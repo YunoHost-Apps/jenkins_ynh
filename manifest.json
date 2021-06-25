@@ -8,6 +8,12 @@
     },
     "version": "2.289.1~ynh1",
     "url": "https://jenkins.io/index.html",
+    "upstream": {
+        "license": "MIT",
+        "website": "https://jenkins.io",
+        "userdoc": "https://www.jenkins.io/doc/book/",
+        "code": "https://github.com/jenkinsci/jenkins"
+    },
     "license": "MIT",
     "maintainer": {
         "name": "",
