@@ -4,51 +4,35 @@
 [![Installer Jenkins avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Read this readme in english.](./README.md)*
+*[Lire ce readme en français.](./README_fr.md)*
 
-> *Ce package vous permet d'installer Jenkins rapidement et simplement sur un serveur YunoHost.  
-Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
+> *Ce package vous permet d'installer Jenkins rapidement et simplement sur un serveur YunoHost.
+Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
 
 ## Vue d'ensemble
-Premier serveur d'automatisation open source, Jenkins fournit des centaines de plugins pour supporter la construction, le déploiement et l'automatisation de n'importe quel projet.
 
-**Version incluse :** 2.277.4
+Serveur d'intégration continue extensible
+
+**Version incluse :** 2.289.1~ynh1
+
+
 
 ## Captures d'écran
 
-![](https://crudelis.fr/lutim/w8DlycXB.png)
+![](./doc/screenshots/screenshot1.png)
 
-## Démo
+## Avertissements / informations importantes
 
-Aucune démo pour cette application.
+* Other infos that people should be aware of, such as:
+    * Use the admin panel of your Jenkins to configure this app.
+    
+## Documentations et ressources
 
-## Configuration
-
-Utiliser le panneau d'administration de Jenkins pour configurer cette application.
-
-## Documentation
-
- * Documentation officielle : https://jenkins.io/doc/
- * Documentation YunoHost : Il n'y a pas d'autre documentation, n'hésitez pas à contribuer.
-
-## Caractéristiques spécifiques YunoHost
-
-#### Support multi-utilisateurs
-
-Supportée, avec LDAP et SSO.
-
-#### Architectures supportées
-
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/jenkins.svg)](https://ci-apps-arm.yunohost.org/ci/apps/jenkins/)
-
-## Liens
-
- * Signaler un bug : https://github.com/YunoHost-Apps/jenkins_ynh/issues
- * Site de l'application : https://jenkins.io
- * Dépôt de l'application principale : https://github.com/jenkinsci/jenkins
- * Site web YunoHost : https://yunohost.org/
-
----
+* Site officiel de l'app : https://jenkins.io
+* Documentation officielle utilisateur : https://www.jenkins.io/doc/book/
+* Dépôt de code officiel de l'app : https://github.com/jenkinsci/jenkins
+* Documentation YunoHost pour cette app : https://yunohost.org/app_jenkins
+* Signaler un bug : https://github.com/YunoHost-Apps/jenkins_ynh/issues
 
 ## Informations pour les développeurs
 
@@ -60,3 +44,5 @@ sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/test
 ou
 sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```
+
+**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps
