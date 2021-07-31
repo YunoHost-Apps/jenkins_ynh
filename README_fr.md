@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Serveur d'intégration continue extensible
 
-**Version incluse :** 2.289.2~ynh1
+**Version incluse :** 2.289.3~ynh1
 
 
 
