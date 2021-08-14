@@ -39,7 +39,7 @@ ynh_print_info --message="Declaring files to be backed up..."
 # BACKUP THE APP MAIN DIR
 #=================================================
 
-ynh_backup --src_path="$final_path"
+ynh_backup --src_path="$final_path" --not_mandatory
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
@@ -50,10 +50,10 @@ ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
-# BACKUP THE JENKINS' BOOT CONFIG
+# BACKUP VARIOUS FILES
 #=================================================
 
-ynh_backup --src_path=/etc/default/$app
+ynh_backup --src_path="/etc/default/$app"
 
 #=================================================
 # END OF SCRIPT
