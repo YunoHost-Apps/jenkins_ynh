@@ -27,9 +27,8 @@ Extendable continuous integration server
 
 ## Disclaimers / important information
 
-* Other infos that people should be aware of, such as:
-    * Use the admin panel of your Jenkins to configure this app.
-    
+* Use the admin panel of your Jenkins to configure this app.
+
 ## Documentation and resources
 
 * Official app website: https://jenkins.io

@@ -23,9 +23,8 @@ Serveur d'intégration continue extensible
 
 ## Avertissements / informations importantes
 
-* Other infos that people should be aware of, such as:
-    * Use the admin panel of your Jenkins to configure this app.
-    
+* Utiliser le panneau d'administration Jenkins pour configurer l'applicaiton.
+
 ## Documentations et ressources
 
 * Site officiel de l'app : https://jenkins.io
