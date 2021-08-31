@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Serveur d'intégration continue extensible
 
-**Version incluse :** 2.303.1~ynh1
+**Version incluse :** 2.303.1~ynh1
 
 
 
@@ -27,11 +27,11 @@ Serveur d'intégration continue extensible
 
 ## Documentations et ressources
 
-* Site officiel de l'app : https://jenkins.io
-* Documentation officielle utilisateur : https://www.jenkins.io/doc/book/
-* Dépôt de code officiel de l'app : https://github.com/jenkinsci/jenkins
-* Documentation YunoHost pour cette app : https://yunohost.org/app_jenkins
-* Signaler un bug : https://github.com/YunoHost-Apps/jenkins_ynh/issues
+* Site officiel de l'app : https://jenkins.io
+* Documentation officielle utilisateur : https://www.jenkins.io/doc/book/
+* Dépôt de code officiel de l'app : https://github.com/jenkinsci/jenkins
+* Documentation YunoHost pour cette app : https://yunohost.org/app_jenkins
+* Signaler un bug : https://github.com/YunoHost-Apps/jenkins_ynh/issues
 
 ## Informations pour les développeurs
 
@@ -44,4 +44,4 @@ ou
 sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps
+**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps
