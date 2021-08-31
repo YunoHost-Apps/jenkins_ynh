@@ -23,7 +23,7 @@ Serveur d'intégration continue extensible
 
 ## Avertissements / informations importantes
 
-* Utiliser le panneau d'administration Jenkins pour configurer l'applicaiton.
+* Utiliser le panneau d'administration Jenkins pour configurer l'application.
 
 ## Documentations et ressources
 
