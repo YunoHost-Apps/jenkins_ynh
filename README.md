@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Extendable continuous integration server
 
-**Shipped version:** 2.289.3~ynh1
+**Shipped version:** 2.303.1~ynh1
 
 
 
@@ -27,9 +27,8 @@ Extendable continuous integration server
 
 ## Disclaimers / important information
 
-* Other infos that people should be aware of, such as:
-    * Use the admin panel of your Jenkins to configure this app.
-    
+* Use the admin panel of your Jenkins to configure this app.
+
 ## Documentation and resources
 
 * Official app website: https://jenkins.io
