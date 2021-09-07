@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Serveur d'intégration continue extensible
 
-**Version incluse :** 2.289.3~ynh1
+**Version incluse :** 2.303.1~ynh1
 
 
 
@@ -23,9 +23,8 @@ Serveur d'intégration continue extensible
 
 ## Avertissements / informations importantes
 
-* Other infos that people should be aware of, such as:
-    * Use the admin panel of your Jenkins to configure this app.
-    
+* Utiliser le panneau d'administration Jenkins pour configurer l'application.
+
 ## Documentations et ressources
 
 * Site officiel de l'app : https://jenkins.io
