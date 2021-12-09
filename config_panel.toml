@@ -1,0 +1,24 @@
+version = "1.0"
+
+[main]
+name = "Jenkins configuration"
+
+    [main.overwrite_files]
+    name = "Overwriting config files"
+
+    	[main.overwrite_files.overwrite_nginx]
+        ask = "Overwrite the NGINX config file?"
+        type = "boolean"
+        default = true
+        help = "If the file is overwritten, a backup will be created."
+
+
+    [main.global_config]
+    name = "Global configuration"
+
+    	[main.global_config.email_type]
+        ask = "Send HTML email to admin?"
+        type = "boolean"
+        default = true
+        help = "Allow app scripts to send HTML mails instead of plain text."
+        
