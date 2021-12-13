@@ -28,11 +28,6 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 # If the form has a value for a variable, take the value from the form,
 # Otherwise, keep the value from the app config.
 
-# is_public
-old_is_public="$(ynh_app_setting_get --app=$app --key=is_public)"
-old_is_public=$(bool_to_true_false $old_is_public)
-is_public="${YNH_CONFIG_MAIN_IS_PUBLIC_IS_PUBLIC:-$old_is_public}"
-
 # Overwrite nginx configuration
 old_overwrite_nginx="$(ynh_app_setting_get --app=$app --key=overwrite_nginx)"
 old_overwrite_nginx=$(bool_to_true_false $old_overwrite_nginx)
@@ -51,8 +46,6 @@ show_config() {
 	# here you are supposed to read some config file/database/other then print the values
 	# echo "YNH_CONFIG_${PANEL_ID}_${SECTION_ID}_${OPTION_ID}=value"
 
-	echo "YNH_CONFIG_MAIN_IS_PUBLIC_IS_PUBLIC=$is_public"
-
 	echo "YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX=$overwrite_nginx"
 
 	echo "YNH_CONFIG_MAIN_GLOBAL_CONFIG_EMAIL_TYPE=$admin_mail_html"
@@ -63,14 +56,6 @@ show_config() {
 #=================================================
 
 apply_config() {
-
-	# Change public accessibility
-	if [ "$is_public" = "true" ]
-	then
-		yunohost app action run $app public_private --args is_public=1
-	else
-		yunohost app action run $app public_private --args is_public=0
-	fi
 
 	# Set overwrite_nginx
 	overwrite_nginx=$(bool_to_01 $overwrite_nginx)
@@ -84,10 +69,4 @@ apply_config() {
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
-# SELECT THE ACTION FOLLOWING THE GIVEN ARGUMENT
-#=================================================
-
-case $1 in
-  show) show_config;;
-  apply) apply_config;;
-esac
+ynh_app_config_run $1
