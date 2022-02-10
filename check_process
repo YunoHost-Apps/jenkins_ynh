@@ -33,6 +33,8 @@
 		upgrade=1	from_commit=0bb8a4ca3a90693c5594a72379704f7e08519c92
 		# 2.319.1~ynh1
 		upgrade=1	from_commit=449a3d43180316d6b1bdb693354bd7cdbe8ef987
+		# 2.319.2~ynh1
+		upgrade=1	from_commit=7e40418b50b5c25d80f3bc521f9627cdd22c4201
 		backup_restore=1
 		multi_instance=0
 		change_url=1
@@ -63,3 +65,5 @@ Notification=none
 		name=2.303.1~ynh1
 	; commit=449a3d43180316d6b1bdb693354bd7cdbe8ef987
 		name=2.319.1~ynh1
+	; commit=7e40418b50b5c25d80f3bc521f9627cdd22c4201
+		name=2.319.2~ynh1
