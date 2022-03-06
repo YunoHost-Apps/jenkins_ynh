@@ -39,6 +39,7 @@ ynh_print_info --message="Declaring files to be backed up..."
 # BACKUP THE APP MAIN DIR
 #=================================================
 
+touch "$final_path/var/lib/jenkins/queue.xml"
 ynh_backup --src_path="$final_path" --not_mandatory
 
 #=================================================
