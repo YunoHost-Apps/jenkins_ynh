@@ -55,7 +55,7 @@ ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Stopping a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -151,7 +151,7 @@ ynh_systemd_action --service_name=nginx --action=reload
 ynh_script_progression --message="Restarting Jenkins..."
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="3600"
 
 #=================================================
 # UPGRADE JENKINS-CLI.JAR
@@ -168,8 +168,10 @@ ynh_script_progression --message="Upgrading plugins..."
 
 cp $final_path/config.xml $final_path/config.xml.bak
 
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+cp -f ../conf/config_unsecured.xml $final_path/config.xml
+chown jenkins: $final_path/config.xml
+
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="3600"
 
 jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -oP '^(.*?) ')
@@ -192,14 +194,14 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Extendable continuous integration server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN

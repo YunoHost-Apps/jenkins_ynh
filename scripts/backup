@@ -1,4 +1,4 @@
-#!/bin/bash
+ss#!/bin/bash
 
 #=================================================
 # GENERIC START
@@ -34,7 +34,7 @@ domain=$(ynh_app_setting_get --app=$app --key=domain)
 # STOP SYSTEMD SERVICE
 #=================================================
 
-ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --log_path="systemd"
 
 #=================================================
 # DECLARE DATA AND CONF FILES TO BACKUP
@@ -65,7 +65,7 @@ ynh_backup --src_path="/etc/default/$app"
 # START SYSTEMD SERVICE
 #=================================================
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT

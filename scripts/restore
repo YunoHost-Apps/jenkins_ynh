@@ -114,14 +114,14 @@ ynh_restore_file --origin_path=/etc/default/$app
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Extendable continuous integration server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="3600"
 
 #=================================================
 # SEND A README FOR THE ADMIN

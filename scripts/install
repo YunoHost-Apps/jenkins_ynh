@@ -152,14 +152,15 @@ timeout=3600
 echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
 
 # Enable Jenkins CLI Protocol/2 for jenkins-cli
 # That the only protocol that allow connection without an authenticated user...
-ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=$final_path/config.xml
+cp -f ../conf/config_unsecured.xml $final_path/config.xml
+chown jenkins: $final_path/config.xml
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
 
 ynh_script_progression --message="Installing plugins..."
 
@@ -175,12 +176,6 @@ do
 		sleep 1
 	fi
 done
-
-# Remove the public access
-ynh_permission_update --permission="main" --remove="visitors"
-
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
 
 jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
 
@@ -215,11 +210,13 @@ $jenkins_cli install-plugin ansicolor
 $jenkins_cli install-plugin fstrigger
 
 # Set global security with ldap
-cp ../conf/config.xml $final_path/
+cp -f ../conf/config.xml $final_path/
 chown jenkins: $final_path/config.xml
 
 # Clean hosts file
 sed -i '/#jenkins/d' /etc/hosts
+
+ynh_permission_update --permission="main" --remove="visitors"
 
 #=================================================
 # STORE THE CONFIG FILE CHECKSUM
@@ -237,7 +234,7 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Extendable continuous integration server"
 
 #=================================================
 # START SYSTEMD SERVICE
@@ -245,7 +242,7 @@ yunohost service add $app --description="Extendable continuous integration serve
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT

@@ -71,7 +71,7 @@ fi
 #=================================================
 ynh_script_progression --message="Stopping a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/$app.log"
+ynh_systemd_action --service_name=$app --action="stop" --log_path="systemd"
 
 #=================================================
 # MODIFY URL IN NGINX CONF
@@ -140,7 +140,7 @@ ynh_store_file_checksum --file="/etc/default/jenkins"
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="start" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="300"
+ynh_systemd_action --service_name=$app --action="start" --line_match="Started" --log_path="systemd" --timeout="300"
 
 #=================================================
 # RELOAD NGINX
