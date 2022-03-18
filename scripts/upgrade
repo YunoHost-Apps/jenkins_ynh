@@ -151,7 +151,7 @@ ynh_systemd_action --service_name=nginx --action=reload
 ynh_script_progression --message="Restarting Jenkins..."
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd" --timeout="3600"
 
 #=================================================
 # UPGRADE JENKINS-CLI.JAR
@@ -171,7 +171,7 @@ cp $final_path/config.xml $final_path/config.xml.bak
 cp -f ../conf/config_unsecured.xml $final_path/config.xml
 chown jenkins: $final_path/config.xml
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd" --timeout="3600"
 
 jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
 UPDATE_LIST=$($jenkins_cli list-plugins | grep -oP '^(.*?) ')
@@ -201,7 +201,7 @@ yunohost service add $app --description="Extendable continuous integration serve
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN

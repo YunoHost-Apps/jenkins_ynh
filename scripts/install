@@ -134,8 +134,16 @@ ynh_script_progression --message="Setuping application..."
 ynh_script_progression --message="Configuring SSOwat..."
 # Making the app public for curl
 ynh_permission_update --permission="main" --add="visitors"
-# Reload SSOwat config
-yunohost app ssowatconf
+
+cat >> "$final_path/jenkins.install.InstallUtil.lastExecVersion" <<EOF
+$JENKINS_VERSION
+EOF
+chown $app:$app "$final_path/jenkins.install.InstallUtil.lastExecVersion"
+
+cat >> "$final_path/jenkins.install.UpgradeWizard.state" <<EOF
+$JENKINS_VERSION
+EOF
+chown $app:$app "$final_path/jenkins.install.UpgradeWizard.state"
 
 # Ignore Setup Wizard
 ynh_replace_string --match_string="\-Djava.awt.headless=true" --replace_string="& -Djenkins.install.runSetupWizard=false" --target_file=/etc/default/jenkins
@@ -151,16 +159,13 @@ timeout=3600
 # Add the domain to /etc/hosts, to prevent any dns delay
 echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
 
-# Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
-
 # Enable Jenkins CLI Protocol/2 for jenkins-cli
 # That the only protocol that allow connection without an authenticated user...
 cp -f ../conf/config_unsecured.xml $final_path/config.xml
 chown jenkins: $final_path/config.xml
 
 # Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd" --timeout="$timeout"
 
 ynh_script_progression --message="Installing plugins..."
 
@@ -212,20 +217,13 @@ $jenkins_cli install-plugin fstrigger
 # Set global security with ldap
 cp -f ../conf/config.xml $final_path/
 chown jenkins: $final_path/config.xml
+ynh_store_file_checksum --file="/etc/default/jenkins"
+ynh_store_file_checksum --file="$final_path/config.xml"
 
 # Clean hosts file
 sed -i '/#jenkins/d' /etc/hosts
 
 ynh_permission_update --permission="main" --remove="visitors"
-
-#=================================================
-# STORE THE CONFIG FILE CHECKSUM
-#=================================================
-ynh_script_progression --message="Storing the config file checksum..."
-
-# Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="/etc/default/jenkins"
-ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -242,7 +240,7 @@ yunohost service add $app --description="Extendable continuous integration serve
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd" --timeout="$timeout"
 
 #=================================================
 # SETUP SSOWAT

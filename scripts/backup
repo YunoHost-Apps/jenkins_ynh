@@ -1,4 +1,4 @@
-ss#!/bin/bash
+#!/bin/bash
 
 #=================================================
 # GENERIC START
@@ -65,7 +65,7 @@ ynh_backup --src_path="/etc/default/$app"
 # START SYSTEMD SERVICE
 #=================================================
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
