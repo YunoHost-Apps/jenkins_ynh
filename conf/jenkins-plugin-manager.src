@@ -1,0 +1,7 @@
+SOURCE_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.9.3/jenkins-plugin-manager-2.9.3.jar
+SOURCE_SUM=1faef87aa735cb48a040d09d7648294d17cee648a028be34399ffcda4293a337
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=jar
+SOURCE_IN_SUBDIR=false
+SOURCE_FILENAME=jenkins-plugin-manager.jar
+SOURCE_EXTRACT=false

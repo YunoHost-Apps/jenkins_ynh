@@ -64,29 +64,6 @@ ynh_script_progression --message="Reinstalling dependencies..."
 ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
-# FIX THE PORT TO USE
-#=================================================
-ynh_script_progression --message="Fixing the port in Jenkins config..."
-
-change_port() {
-	# Wait for the creation of the jenkins service file
-	timeout=600
-	for j in `seq 1 $timeout`
-	do
-		# Wait for an update of plugin repositories
-		if test -e /etc/default/jenkins; then
-			break;
-		else
-			sleep 0.5
-		fi
-	done
-	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
-	ynh_replace_string --match_string="^HTTP_PORT=.*" --replace_string="HTTP_PORT=$port" --target_file=/etc/default/jenkins
-}
-change_port &
-pid_change_port=$!
-
-#=================================================
 # INSTALL JENKINS
 #=================================================
 ynh_script_progression --message="Installing Jenkins..."
@@ -96,6 +73,17 @@ ynh_setup_source --dest_dir="../conf"
 dpkg --install --force-confnew ../conf/jenkins.deb
 
 #=================================================
+# SETUP APPLICATION
+#=================================================
+ynh_script_progression --message="Setuping application..."
+
+ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
+
+systemctl daemon-reload --quiet
+
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+
+#=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
 ynh_script_progression --message="Restoring the app main directory..."
@@ -103,25 +91,18 @@ ynh_script_progression --message="Restoring the app main directory..."
 ynh_restore_file --origin_path="$final_path" --not_mandatory
 
 #=================================================
-# RESTORE THE JENKINS' BOOT CONFIG
-#=================================================
-
-ynh_secure_remove --file="/etc/default/jenkins"
-ynh_restore_file --origin_path=/etc/default/$app
-
-#=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN

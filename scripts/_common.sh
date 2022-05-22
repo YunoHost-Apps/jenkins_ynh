@@ -7,6 +7,8 @@
 # dependencies used by the app
 pkg_dependencies="openjdk-11-jdk daemon net-tools"
 
+PLUGIN_CLI_VERSION=2.9.3
+
 #=================================================
 # PERSONAL HELPERS
 #=================================================

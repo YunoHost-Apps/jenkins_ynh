@@ -34,6 +34,8 @@ domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
+jenkins_version=$(ynh_app_upstream_version)
+
 app=$YNH_APP_INSTANCE_NAME
 
 #=================================================
@@ -65,7 +67,7 @@ ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
 ynh_script_progression --message="Finding an available port..."
 
 # Find an available port
-port=$(ynh_find_port --port=8080)
+port=$(ynh_find_port --port=8095)
 ynh_app_setting_set --app=$app --key=port --value=$port
 
 #=================================================
@@ -83,6 +85,7 @@ ynh_script_progression --message="Setting up source files..."
 ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="../conf"
+ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -94,29 +97,6 @@ ynh_add_nginx_config
 
 #=================================================
 # SPECIFIC SETUP
-#=================================================
-# FIX THE PORT TO USE
-#=================================================
-ynh_script_progression --message="Fixing the port in Jenkins config..."
-
-change_port() {
-	# Wait for the creation of the jenkins service file
-	timeout=600
-	for j in `seq 1 $timeout`
-	do
-		# Wait for an update of plugin repositories
-		if test -e /etc/default/jenkins; then
-			break;
-		else
-			sleep 0.5
-		fi
-	done
-	# And modify the port as soon as possible, to prevent a crach of jenkins if the default port is already used.
-	ynh_replace_string --match_string="^HTTP_PORT=.*" --replace_string="HTTP_PORT=$port" --target_file=/etc/default/jenkins
-}
-change_port &
-pid_change_port=$!
-
 #=================================================
 # INSTALL JENKINS
 #=================================================
@@ -130,105 +110,67 @@ dpkg --install --force-confnew ../conf/jenkins.deb
 #=================================================
 ynh_script_progression --message="Setuping application..."
 
-# Set the app as temporarily public for jenkins-cli.jar
-ynh_script_progression --message="Configuring SSOwat..."
-# Making the app public for curl
-ynh_permission_update --permission="main" --add="visitors"
-# Reload SSOwat config
-yunohost app ssowatconf
+cat >> "$final_path/jenkins.install.InstallUtil.lastExecVersion" <<EOF
+$jenkins_version
+EOF
+chown $app:$app "$final_path/jenkins.install.InstallUtil.lastExecVersion"
 
-# Ignore Setup Wizard
-ynh_replace_string --match_string="\-Djava.awt.headless=true" --replace_string="& -Djenkins.install.runSetupWizard=false" --target_file=/etc/default/jenkins
+cat >> "$final_path/jenkins.install.UpgradeWizard.state" <<EOF
+$jenkins_version
+EOF
+chown $app:$app "$final_path/jenkins.install.UpgradeWizard.state"
 
-if [ "$path_url" != "/" ]
-then
-	# Add the path, in case of sub-path installation, into jenkins' boot options
-	sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
-fi
+ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
 
-config_OK=0
-timeout=3600
-# Add the domain to /etc/hosts, to prevent any dns delay
-echo "127.0.0.1 $domain #jenkins" | tee -a /etc/hosts
+systemctl daemon-reload --quiet
 
-# Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
-# Enable Jenkins CLI Protocol/2 for jenkins-cli
-# That the only protocol that allow connection without an authenticated user...
-ynh_replace_string --match_string="<slaveAgentPort>0</slaveAgentPort>" --replace_string="&\n<enabledAgentProtocols><string>CLI2-connect</string></enabledAgentProtocols>" --target_file=$final_path/config.xml
-
-# Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
-
+#=================================================
+# INSTALL PLUGINS
+#=================================================
 ynh_script_progression --message="Installing plugins..."
 
-# If the log says that jenkins has started, install the plugins
-wget -nv --no-check-certificate https://$domain${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar 2>&1
-for i in `seq 1 $timeout`
-do
-	# Wait for an update of plugin repositories
-	if test -e $final_path/updates/default.json; then
-		break;
-	else
-		echo -n "."
-		sleep 1
-	fi
-done
-
-# Remove the public access
-ynh_permission_update --permission="main" --remove="visitors"
-
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
-
-jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://${domain}:${port}${path_url%/}"
+jenkins_plugin_manager="ynh_exec_warn_less java -jar $final_path/jenkins-plugin-manager.jar --war /usr/share/java/jenkins.war --plugin-download-directory=$final_path/plugins"
 
 # Install plugins for http authentication and ldap.
-$jenkins_cli install-plugin reverse-proxy-auth-plugin
+$jenkins_plugin_manager --plugins reverse-proxy-auth-plugin
 
 # Install recommended plugins (those from Setup Wizard)
-$jenkins_cli install-plugin cloudbees-folder	# Folders Plugin
-$jenkins_cli install-plugin antisamy-markup-formatter	# OWASP Markup Formatter Plugin
-$jenkins_cli install-plugin pam-auth	# PAM Authentication plugin
-$jenkins_cli install-plugin mailer	# Mailer Plugin
-$jenkins_cli install-plugin ldap	# LDAP Plugin
-$jenkins_cli install-plugin matrix-auth	# Matrix Authorization Strategy Plugin
-$jenkins_cli install-plugin build-timeout	# Build timeout plugin
-$jenkins_cli install-plugin credentials-binding	# Credentials Binding Plugin
-$jenkins_cli install-plugin timestamper	# Timestamper
-$jenkins_cli install-plugin ws-cleanup	# Workspace Cleanup Plugin
-$jenkins_cli install-plugin ant	# Ant Plugin
-$jenkins_cli install-plugin gradle	# Gradle Plugin
-$jenkins_cli install-plugin workflow-aggregator	# Pipeline
-$jenkins_cli install-plugin pipeline-stage-view	# Pipeline: Stage View Plugin
-$jenkins_cli install-plugin git	# Git plugin
-$jenkins_cli install-plugin github-organization-folder	# GitHub Organization Folder Plugin
-$jenkins_cli install-plugin subversion	# Subversion Plug-in
-$jenkins_cli install-plugin email-ext	# Email Extension Plugin
-$jenkins_cli install-plugin ssh-slaves	# SSH Slaves plugin
+$jenkins_plugin_manager --plugins cloudbees-folder	# Folders Plugin
+$jenkins_plugin_manager --plugins antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+$jenkins_plugin_manager --plugins pam-auth	# PAM Authentication plugin
+$jenkins_plugin_manager --plugins mailer	# Mailer Plugin
+$jenkins_plugin_manager --plugins ldap	# LDAP Plugin
+$jenkins_plugin_manager --plugins matrix-auth	# Matrix Authorization Strategy Plugin
+$jenkins_plugin_manager --plugins build-timeout	# Build timeout plugin
+$jenkins_plugin_manager --plugins credentials-binding	# Credentials Binding Plugin
+$jenkins_plugin_manager --plugins timestamper	# Timestamper
+$jenkins_plugin_manager --plugins ws-cleanup	# Workspace Cleanup Plugin
+$jenkins_plugin_manager --plugins ant	# Ant Plugin
+$jenkins_plugin_manager --plugins gradle	# Gradle Plugin
+$jenkins_plugin_manager --plugins workflow-aggregator	# Pipeline
+$jenkins_plugin_manager --plugins pipeline-stage-view	# Pipeline: Stage View Plugin
+$jenkins_plugin_manager --plugins git	# Git plugin
+$jenkins_plugin_manager --plugins github-organization-folder	# GitHub Organization Folder Plugin
+$jenkins_plugin_manager --plugins subversion	# Subversion Plug-in
+$jenkins_plugin_manager --plugins email-ext	# Email Extension Plugin
+$jenkins_plugin_manager --plugins ssh-slaves	# SSH Slaves plugin
 
 # Install extra comfort plugins
 # Handle terminal colours. Enhance the readability of the terminal.
-$jenkins_cli install-plugin ansicolor
+$jenkins_plugin_manager --plugins ansicolor
 # Monitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
-$jenkins_cli install-plugin fstrigger
-
-# Set global security with ldap
-cp ../conf/config.xml $final_path/
-chown jenkins: $final_path/config.xml
-
-# Clean hosts file
-sed -i '/#jenkins/d' /etc/hosts
+$jenkins_plugin_manager --plugins fstrigger
 
 #=================================================
-# STORE THE CONFIG FILE CHECKSUM
+# ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Storing the config file checksum..."
+ynh_script_progression --message="Adding a configuration file..."
 
-# Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="/etc/default/jenkins"
-ynh_store_file_checksum --file="$final_path/config.xml"
+ynh_add_config --template="../conf/config.xml" --destination="$final_path/config.xml"
+
+chown $app:$app "$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -237,7 +179,7 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
@@ -245,7 +187,7 @@ yunohost service add $app --description="Extendable continuous integration serve
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="$timeout"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
 #=================================================
 # SETUP SSOWAT

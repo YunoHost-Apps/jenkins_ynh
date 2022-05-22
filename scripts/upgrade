@@ -45,9 +45,6 @@ ynh_clean_setup () {
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
-ynh_backup_if_checksum_is_different --file="/etc/default/jenkins"
-ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
-
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
@@ -55,7 +52,7 @@ ynh_backup_if_checksum_is_different --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Stopping a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped LSB" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="stop" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -91,6 +88,12 @@ if ! ynh_permission_exists --permission="github-webhook"; then
 	ynh_permission_create --permission="github-webhook" --url="/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
 fi
 
+# Remove the log files
+ynh_secure_remove --file="/var/log/$app"
+
+# No more needed since systemd
+ynh_delete_file_checksum --file="/etc/default/jenkins"
+
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -100,20 +103,19 @@ then
 	ynh_script_progression --message="Upgrading source files..."
 	# Download jenkins deb file and install it.
 	ynh_setup_source --dest_dir="../conf"
+	ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
 	dpkg --install --force-confnew ../conf/jenkins.deb
 
 	#=================================================
-	# FIX JENKINS SETUP
+	# SETUP APPLICATION
 	#=================================================
+	ynh_script_progression --message="Setuping application..."
 
-	if [ "$path_url" != "/" ];
-	then
-		# Add the path, in case of sub-path installation, into jenkins' boot options
-		if ! grep --quiet "prefix=$path_url" /etc/default/jenkins
-		then
-			sed -i "$ s@--httpPort=\$HTTP_PORT@& --prefix=$path_url@g" /etc/default/jenkins
-		fi
-	fi
+	ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
+
+	systemctl daemon-reload --quiet
+
+	ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 fi
 
 #=================================================
@@ -146,44 +148,17 @@ ynh_script_progression --message="Reloading NGINX web server..."
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
-# CHECK JENKINS STARTING
-#=================================================
-ynh_script_progression --message="Restarting Jenkins..."
-
-# Wait for Jenkins to be fully started
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
-
-#=================================================
-# UPGRADE JENKINS-CLI.JAR
-#=================================================
-ynh_script_progression --message="Upgrading jenkins-cli.jar..."
-
-wget -nv --no-check-certificate https://127.0.0.1${path_url%/}/jnlpJars/jenkins-cli.jar -O $final_path/jenkins-cli.jar.temp 2>&1
-mv -f $final_path/jenkins-cli.jar.temp $final_path/jenkins-cli.jar
-
-#=================================================
 # UPGRADE PLUGINS
 #=================================================
 ynh_script_progression --message="Upgrading plugins..."
 
-cp $final_path/config.xml $final_path/config.xml.bak
-
-ynh_replace_string --match_string="<useSecurity>true</useSecurity>" --replace_string="<useSecurity>false</useSecurity>" --target_file=$final_path/config.xml
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log" --timeout="3600"
-
-jenkins_cli="ynh_exec_warn_less java -jar $final_path/jenkins-cli.jar -s http://127.0.0.1:${port}${path_url%/}"
-UPDATE_LIST=$($jenkins_cli list-plugins | grep -oP '^(.*?) ')
+jenkins_plugin_manager="ynh_exec_warn_less java -jar $final_path/jenkins-plugin-manager.jar --war /usr/share/java/jenkins.war --plugin-download-directory=$final_path/plugins"
+UPDATE_LIST=$($jenkins_plugin_manager --list | grep -o '.*\..*' | grep -oP '^(.*?) ')
 
 for plugin in ${UPDATE_LIST}
 do
-	$jenkins_cli install-plugin "$plugin" || true
+	$jenkins_plugin_manager --plugins "$plugin" || true
 done
-
-mv $final_path/config.xml.bak $final_path/config.xml
-
-# Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="/etc/default/jenkins"
-ynh_store_file_checksum --file="$final_path/config.xml"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -192,14 +167,14 @@ ynh_store_file_checksum --file="$final_path/config.xml"
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..."
 
-yunohost service add $app --description="Extendable continuous integration server" --log="/var/log/$app/$app.log"
+yunohost service add $app --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Jenkins is fully up and running" --log_path="/var/log/$app/$app.log"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN
