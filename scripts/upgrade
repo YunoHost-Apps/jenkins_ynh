@@ -104,6 +104,10 @@ then
 	# Download jenkins deb file and install it.
 	ynh_setup_source --dest_dir="../conf"
 	ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
+	chmod 750 "$final_path"
+	chmod -R o-rwx "$final_path"
+	chown -R $app:$app "$final_path"
+
 	dpkg --install --force-confnew ../conf/jenkins.deb
 
 	#=================================================
