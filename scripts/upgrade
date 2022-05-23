@@ -95,6 +95,14 @@ ynh_secure_remove --file="/var/log/$app"
 ynh_delete_file_checksum --file="/etc/default/jenkins"
 
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..."
+
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 

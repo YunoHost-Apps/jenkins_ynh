@@ -78,6 +78,14 @@ ynh_script_progression --message="Installing dependencies..."
 ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..."
+
+# Create a system user
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..."
