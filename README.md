@@ -5,7 +5,7 @@ It shall NOT be edited by hand.
 
 # Jenkins for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![Working status](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
 [![Install Jenkins with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -19,11 +19,9 @@ Extendable continuous integration server
 
 **Shipped version:** 2.332.3~ynh1
 
-
-
 ## Screenshots
 
-![](./doc/screenshots/screenshot1.png)
+![Screenshot of Jenkins](./doc/screenshots/screenshot1.png)
 
 ## Disclaimers / important information
 
@@ -31,21 +29,22 @@ Extendable continuous integration server
 
 ## Documentation and resources
 
-* Official app website: https://jenkins.io
-* Official user documentation: https://www.jenkins.io/doc/book/
-* Upstream app code repository: https://github.com/jenkinsci/jenkins
-* YunoHost documentation for this app: https://yunohost.org/app_jenkins
-* Report a bug: https://github.com/YunoHost-Apps/jenkins_ynh/issues
+* Official app website: <https://jenkins.io>
+* Official user documentation: <https://www.jenkins.io/doc/book/>
+* Upstream app code repository: <https://github.com/jenkinsci/jenkins>
+* YunoHost documentation for this app: <https://yunohost.org/app_jenkins>
+* Report a bug: <https://github.com/YunoHost-Apps/jenkins_ynh/issues>
 
 ## Developer info
 
 Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
 
 To try the testing branch, please proceed like that.
-```
+
+``` bash
 sudo yunohost app install https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 or
 sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```
 
-**More info regarding app packaging:** https://yunohost.org/packaging_apps
+**More info regarding app packaging:** <https://yunohost.org/packaging_apps>
