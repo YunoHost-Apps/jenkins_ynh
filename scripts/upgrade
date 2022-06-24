@@ -131,6 +131,13 @@ then
 fi
 
 #=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..."
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
@@ -142,13 +149,6 @@ then
 	# Create a dedicated NGINX config
 	ynh_add_nginx_config
 fi
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..."
-
-ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # SPECIFIC UPGRADE
