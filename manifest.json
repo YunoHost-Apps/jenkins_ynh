@@ -6,7 +6,7 @@
         "en": "Extendable continuous integration server",
         "fr": "Serveur d'intégration continue extensible"
     },
-    "version": "2.346.1~ynh1",
+    "version": "2.346.2~ynh1",
     "url": "https://jenkins.io/index.html",
     "upstream": {
         "license": "MIT",
@@ -18,10 +18,12 @@
     "maintainer": {
         "name": "yalh76"
     },
-    "previous_maintainers": [{
-        "name": "Julien Malik et Maniack Crudelis",
-        "email": "maniackc_dev@crudelis.fr"
-    }],
+    "previous_maintainers": [
+        {
+            "name": "Julien Malik et Maniack Crudelis",
+            "email": "maniackc_dev@crudelis.fr"
+        }
+    ],
     "requirements": {
         "yunohost": ">= 4.3.0"
     },
