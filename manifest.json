@@ -12,7 +12,8 @@
         "license": "MIT",
         "website": "https://jenkins.io",
         "userdoc": "https://www.jenkins.io/doc/book/",
-        "code": "https://github.com/jenkinsci/jenkins"
+        "code": "https://github.com/jenkinsci/jenkins",
+        "cpe": "cpe:2.3:a:jenkins:jenkins"
     },
     "license": "MIT",
     "maintainer": {
