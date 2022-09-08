@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Extendable continuous integration server
 
-**Shipped version:** 2.346.3~ynh1
+**Shipped version:** 2.361.1~ynh1
 
 
 ## Screenshots
