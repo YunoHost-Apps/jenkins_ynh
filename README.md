@@ -19,7 +19,6 @@ Extendable continuous integration server
 
 **Shipped version:** 2.361.1~ynh1
 
-
 ## Screenshots
 
 ![Screenshot of Jenkins](./doc/screenshots/screenshot1.png)
