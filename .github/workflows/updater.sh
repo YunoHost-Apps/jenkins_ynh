@@ -17,7 +17,7 @@
 current_version=$(cat manifest.json | jq -j '.version|split("~")[0]')
 repo=$(cat manifest.json | jq -j '.upstream.code|split("https://github.com/")[1]')
 # Some jq magic is needed, because the latest upstream release is not always the latest version (e.g. security patches for older versions)
-version=$(curl --silent "https://api.github.com/repos/$repo/releases" | jq -r '.[] | select( .prerelease != true ) | select( .target_commitish | contains("stable") ) | .tag_name' | sort -V | tail -1 | cut -d"-" -f2)
+version=$(curl --silent "https://api.github.com/repos/$repo/releases" | jq -r '.[] | select( .prerelease != true ) | select( .target_commitish | contains("refs/heads/master") | not ) | .tag_name' | sort -V | tail -1 | cut -d"-" -f2)
 assets="https://pkg.jenkins.io/debian-stable/binary/jenkins_${version}_all.deb"
 
 # Setting up the environment variables
