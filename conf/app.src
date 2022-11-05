@@ -1,5 +1,5 @@
-SOURCE_URL=https://pkg.jenkins.io/debian-stable/binary/jenkins_2.361.2_all.deb
-SOURCE_SUM=dbf9d78a6f4922f2f01586342784014f5bb8d63f389747fc8d81e581699b29de
+SOURCE_URL=https://pkg.jenkins.io/debian-stable/binary/jenkins_2.361.3_all.deb
+SOURCE_SUM=264f4fc908457ff1d63824ba051a6a55b3aa0043b8604658142c48b419ffdf0a
 SOURCE_SUM_PRG=sha256sum
 SOURCE_FORMAT=deb
 SOURCE_IN_SUBDIR=true
