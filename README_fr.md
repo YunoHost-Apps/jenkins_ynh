@@ -17,7 +17,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Serveur d'intégration continue extensible
 
-**Version incluse :** 2.361.3~ynh1
+**Version incluse :** 2.361.4~ynh1
 
 ## Captures d'écran
 
