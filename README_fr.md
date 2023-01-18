@@ -5,23 +5,23 @@ It shall NOT be edited by hand.
 
 # Jenkins pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
+[![Niveau d’intégration](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)  
 [![Installer Jenkins avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer Jenkins rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+> *Ce package vous permet d’installer Jenkins rapidement et simplement sur un serveur YunoHost.
+Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l’installer et en profiter.*
 
-## Vue d'ensemble
+## Vue d’ensemble
 
 Serveur d'intégration continue extensible
 
 **Version incluse :** 2.375.2~ynh1
 
-## Captures d'écran
+## Captures d’écran
 
-![Capture d'écran de Jenkins](./doc/screenshots/screenshot1.png)
+![Capture d’écran de Jenkins](./doc/screenshots/screenshot1.png)
 
 ## Avertissements / informations importantes
 
@@ -29,9 +29,9 @@ Serveur d'intégration continue extensible
 
 ## Documentations et ressources
 
-* Site officiel de l'app : <https://jenkins.io>
+* Site officiel de l’app : <https://jenkins.io>
 * Documentation officielle utilisateur : <https://www.jenkins.io/doc/book/>
-* Dépôt de code officiel de l'app : <https://github.com/jenkinsci/jenkins>
+* Dépôt de code officiel de l’app : <https://github.com/jenkinsci/jenkins>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_jenkins>
 * Signaler un bug : <https://github.com/YunoHost-Apps/jenkins_ynh/issues>
 
@@ -47,4 +47,4 @@ ou
 sudo yunohost app upgrade jenkins -u https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** <https://yunohost.org/packaging_apps>
+**Plus d’infos sur le packaging d’applications :** <https://yunohost.org/packaging_apps>
