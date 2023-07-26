@@ -115,12 +115,17 @@ ynh_add_nginx_config
 ynh_script_progression --message="Installing Jenkins..."
 
 # Download jenkins deb file and install it.
-dpkg --install --force-confnew ../conf/jenkins.deb
+dpkg --install --force-confnew ../conf/jenkins.deb || true
+dpkg_install_failed=$(dpkg-query -f '${status} ${package}\n' -W | awk '$4 ~ /^jenkins.*/ && $3 != "installed" {print $4}' | wc -l)
+
+if [[ $dpkg_install_failed -ge 1 ]]; then
+  ynh_print_warn --message="The service jenkins cannot be started for now."
+fi
 
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setuping application..."
+ynh_script_progression --message="Setuping application on port $port..."
 
 cat >> "$final_path/jenkins.install.InstallUtil.lastExecVersion" <<EOF
 $jenkins_version
@@ -137,6 +142,10 @@ ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_
 systemctl daemon-reload --quiet
 
 ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+
+if [[ $dpkg_install_failed -ge 1 ]]; then
+  dpkg --configure -a
+fi
 
 #=================================================
 # INSTALL PLUGINS
