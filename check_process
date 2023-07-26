@@ -38,7 +38,9 @@
 		# 2.319.3~ynh1
 		#upgrade=1	from_commit=ceac884c4d82f8164ec7ce391d354d794948bb72
 		# 2.332.3~ynh1
-		upgrade=1	from_commit=5ff1883636f649c7e32d6b520fd54621f83097ba
+		#upgrade=1	from_commit=5ff1883636f649c7e32d6b520fd54621f83097ba
+		# 2.375.2~ynh1
+		upgrade=1	from_commit=4733662adabc01ea1e29ca0bf55c45f204bb1857
 		backup_restore=1
 		multi_instance=0
 		change_url=1
