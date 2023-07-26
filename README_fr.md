@@ -18,7 +18,7 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 
 Serveur d'intégration continue extensible
 
-**Version incluse :** 2.387.2~ynh1
+**Version incluse :** 2.401.2~ynh1
 
 ## Captures d’écran
 
