@@ -173,7 +173,7 @@ $jenkins_plugin_manager --plugins gradle	# Gradle Plugin
 $jenkins_plugin_manager --plugins workflow-aggregator	# Pipeline
 $jenkins_plugin_manager --plugins pipeline-stage-view	# Pipeline: Stage View Plugin
 $jenkins_plugin_manager --plugins git	# Git plugin
-$jenkins_plugin_manager --plugins github-organization-folder	# GitHub Organization Folder Plugin
+$jenkins_plugin_manager --plugins github-branch-source	# GitHub Branch Source Plugin
 $jenkins_plugin_manager --plugins subversion	# Subversion Plug-in
 $jenkins_plugin_manager --plugins email-ext	# Email Extension Plugin
 $jenkins_plugin_manager --plugins ssh-slaves	# SSH Slaves plugin
