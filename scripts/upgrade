@@ -52,7 +52,7 @@ ynh_abort_if_errors
 #=================================================
 ynh_script_progression --message="Stopping a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="stop" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -127,7 +127,7 @@ then
 
 	systemctl daemon-reload --quiet
 
-	ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+	ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 fi
 
 #=================================================
@@ -186,7 +186,7 @@ yunohost service add $app --description="Jenkins Continuous Integration Server"
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN
