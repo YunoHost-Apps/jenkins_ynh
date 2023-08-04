@@ -89,7 +89,7 @@ ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_
 
 systemctl daemon-reload --quiet
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # RESTORE THE APP MAIN DIR
@@ -110,7 +110,7 @@ yunohost service add $app --description="Jenkins Continuous Integration Server"
 #=================================================
 ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started Jenkins Continuous Integration Server" --log_path="systemd"
+ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # SEND A README FOR THE ADMIN
