@@ -33,7 +33,7 @@ Serveur d'intégration continue extensible
 * Site officiel de l’app : <https://jenkins.io>
 * Documentation officielle utilisateur : <https://www.jenkins.io/doc/book/>
 * Dépôt de code officiel de l’app : <https://github.com/jenkinsci/jenkins>
-* Documentation YunoHost pour cette app : <https://yunohost.org/app_jenkins>
+* YunoHost Store: <https://apps.yunohost.org/app/jenkins>
 * Signaler un bug : <https://github.com/YunoHost-Apps/jenkins_ynh/issues>
 
 ## Informations pour les développeurs

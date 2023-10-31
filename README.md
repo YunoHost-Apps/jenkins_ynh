@@ -33,7 +33,7 @@ Extendable continuous integration server
 * Official app website: <https://jenkins.io>
 * Official user documentation: <https://www.jenkins.io/doc/book/>
 * Upstream app code repository: <https://github.com/jenkinsci/jenkins>
-* YunoHost documentation for this app: <https://yunohost.org/app_jenkins>
+* YunoHost Store: <https://apps.yunohost.org/app/jenkins>
 * Report a bug: <https://github.com/YunoHost-Apps/jenkins_ynh/issues>
 
 ## Developer info
