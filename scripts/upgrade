@@ -116,18 +116,27 @@ then
 	chmod -R o-rwx "$final_path"
 	chown -R $app:$app "$final_path"
 
-	dpkg --install --force-confnew ../conf/jenkins.deb
+	dpkg --install --force-confnew ../conf/jenkins.deb || true
+	dpkg_install_failed=$(dpkg-query -f '${status} ${package}\n' -W | awk '$4 ~ /^jenkins.*/ && $3 != "installed" {print $4}' | wc -l)
+	
+	if [[ $dpkg_install_failed -ge 1 ]]; then
+	  ynh_print_warn --message="The service jenkins cannot be started for now."
+	fi
 
 	#=================================================
 	# SETUP APPLICATION
 	#=================================================
-	ynh_script_progression --message="Setuping application..."
+	ynh_script_progression --message="Setuping application on port $port..."
 
 	ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
 
 	systemctl daemon-reload --quiet
 
 	ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
+
+	if [[ $dpkg_install_failed -ge 1 ]]; then
+	  dpkg --configure -a
+	fi
 fi
 
 #=================================================
