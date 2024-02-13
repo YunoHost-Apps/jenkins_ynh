@@ -5,7 +5,7 @@
 #=================================================
 
 # dependencies used by the app
-pkg_dependencies="openjdk-11-jdk|openjdk-17-jdk daemon net-tools"
+pkg_dependencies="openjdk-11-jdk|openjdk-17-jdk|openjdk-21-jdk daemon net-tools"
 
 PLUGIN_CLI_VERSION=2.9.3
 
