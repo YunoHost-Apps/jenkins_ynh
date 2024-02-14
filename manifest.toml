@@ -73,7 +73,7 @@ ram.runtime = "50M" # FIXME: replace with an **estimate** minimum ram requiremen
 
     [resources.apt]
     packages = [
-        "openjdk-11-jdk|openjdk-17-jdk|openjdk-21-jdk",
+        "openjdk-11-jdk\\|openjdk-17-jdk\\|openjdk-21-jdk",
         "daemon",
         "net-tools"
     ]
