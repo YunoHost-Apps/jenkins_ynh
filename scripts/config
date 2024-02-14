@@ -30,12 +30,12 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 # Overwrite nginx configuration
 old_overwrite_nginx="$(ynh_app_setting_get --app=$app --key=overwrite_nginx)"
-old_overwrite_nginx=$(bool_to_true_false $old_overwrite_nginx)
+old_overwrite_nginx=$(b01_to_bool $old_overwrite_nginx)
 overwrite_nginx="${YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX:-$old_overwrite_nginx}"
 
 # Type of admin mail configuration
 old_admin_mail_html="$(ynh_app_setting_get --app=$app --key=admin_mail_html)"
-old_admin_mail_html=$(bool_to_true_false $old_admin_mail_html)
+old_admin_mail_html=$(b01_to_bool $old_admin_mail_html)
 admin_mail_html="${YNH_CONFIG_MAIN_GLOBAL_CONFIG_EMAIL_TYPE:-$old_admin_mail_html}"
 
 #=================================================

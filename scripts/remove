@@ -10,59 +10,27 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
+# REMOVE SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Loading installation settings..."
-
-app=$YNH_APP_INSTANCE_NAME
-
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-
-#=================================================
-# STANDARD REMOVE
-#=================================================
-# REMOVE SERVICE INTEGRATION IN YUNOHOST
-#=================================================
+ynh_script_progression --message="Removing system configurations related to $app..." --weight=1
 
 # Remove the service from the list of services known by YunoHost (added from `yunohost service add`)
-if ynh_exec_warn_less yunohost service status $app >/dev/null
-then
-	ynh_script_progression --message="Removing $app service integration..."
-	yunohost service remove $app
+if ynh_exec_warn_less yunohost service status "$app" >/dev/null; then
+    yunohost service remove "$app"
 fi
 
-#=================================================
-# STOP SYSTEMD SERVICE
-#=================================================
-ynh_script_progression --message="Stopping a systemd service..."
+ynh_systemd_action --service_name="$app" --action="stop" --line_match="Stopped" --log_path="systemd"
 
-ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --log_path="systemd"
+# Remove the dedicated NGINX config
+ynh_remove_nginx_config
 
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Removing dependencies..."
+ynh_script_progression --message="Removing Jenkins deb packages..."
 
 # Remove metapackage and its dependencies
-ynh_package_autopurge $app
-ynh_remove_app_dependencies
-
-#=================================================
-# REMOVE APP MAIN DIR
-#=================================================
-ynh_script_progression --message="Removing app main directory..."
-
-# Remove the app directory securely
-ynh_secure_remove --file="$final_path"
-
-#=================================================
-# REMOVE NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Removing NGINX web server configuration..."
-
-# Remove the dedicated NGINX config
-ynh_remove_nginx_config
+ynh_package_autopurge "$app"
 
 #=================================================
 # SPECIFIC REMOVE

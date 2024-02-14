@@ -11,101 +11,23 @@ source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-ynh_clean_setup () {
-	# Clean installation remaining that are not handle by the remove script.
-	ynh_clean_check_starting
-	# Stop change_port()
-	ynh_exec_warn_less kill -s 15 $pid_change_port
-
-	# Clean hosts
-	sed -i '/#jenkins/d' /etc/hosts
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
 
-domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
-
 jenkins_version=$(ynh_app_upstream_version)
-
-app=$YNH_APP_INSTANCE_NAME
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-ynh_script_progression --message="Validating installation parameters..."
-
-final_path=/var/lib/$app
-test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-ynh_script_progression --message="Storing installation settings..."
-
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
-ynh_app_setting_set --app=$app --key=admin_mail_html --value=1
-
-#=================================================
-# STANDARD MODIFICATIONS
-#=================================================
-# FIND AND OPEN A PORT
-#=================================================
-ynh_script_progression --message="Finding an available port..."
-
-# Find an available port
-port=$(ynh_find_port --port=8095)
-ynh_app_setting_set --app=$app --key=port --value=$port
-
-#=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Installing dependencies..."
-
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..."
-
-# Create a system user
-ynh_system_user_create --username=$app --home_dir="$final_path"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..."
 
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir="../conf"
-ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
+ynh_setup_source --dest_dir="$install_dir"
+ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:$app "$final_path"
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring NGINX web server..."
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
+chmod -R o-rwx "$install_dir"
+chown -R "$app:$app" "$install_dir"
 
 #=================================================
 # SPECIFIC SETUP
@@ -115,92 +37,91 @@ ynh_add_nginx_config
 ynh_script_progression --message="Installing Jenkins..."
 
 # Download jenkins deb file and install it.
-dpkg --install --force-confnew ../conf/jenkins.deb || true
+dpkg --install --force-confnew "$install_dir/jenkins.deb" || true
 dpkg_install_failed=$(dpkg-query -f '${status} ${package}\n' -W | awk '$4 ~ /^jenkins.*/ && $3 != "installed" {print $4}' | wc -l)
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
-  ynh_print_warn --message="The service jenkins cannot be started for now."
+    ynh_print_warn --message="The service jenkins cannot be started for now."
 fi
 
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setuping application on port $port..."
+ynh_script_progression --message="Setting up application on port $port..."
 
-cat >> "$final_path/jenkins.install.InstallUtil.lastExecVersion" <<EOF
-$jenkins_version
-EOF
-chown $app:$app "$final_path/jenkins.install.InstallUtil.lastExecVersion"
+echo "$jenkins_version" >> "$install_dir/jenkins.install.InstallUtil.lastExecVersion"
+echo "$jenkins_version" >> "$install_dir/jenkins.install.UpgradeWizard.state"
+chown "$app:$app" "$install_dir/jenkins.install.InstallUtil.lastExecVersion"
+chown "$app:$app" "$install_dir/jenkins.install.UpgradeWizard.state"
 
-cat >> "$final_path/jenkins.install.UpgradeWizard.state" <<EOF
-$jenkins_version
-EOF
-chown $app:$app "$final_path/jenkins.install.UpgradeWizard.state"
-
-ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
-
+ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
+    --match_string="Environment=\"JENKINS_PORT=8080\"" \
+    --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 systemctl daemon-reload --quiet
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
+ynh_systemd_action --service_name="$app" --action="restart" --line_match="Started" --log_path="systemd"
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
-  dpkg --configure -a
+    dpkg --configure -a
 fi
-
-#=================================================
-# INSTALL PLUGINS
-#=================================================
-ynh_script_progression --message="Installing plugins..."
-
-jenkins_plugin_manager="ynh_exec_warn_less java -jar $final_path/jenkins-plugin-manager.jar --war /usr/share/java/jenkins.war --plugin-download-directory=$final_path/plugins"
-
-# Install plugins for http authentication and ldap.
-$jenkins_plugin_manager --plugins reverse-proxy-auth-plugin
-
-# Install recommended plugins (those from Setup Wizard)
-$jenkins_plugin_manager --plugins cloudbees-folder	# Folders Plugin
-$jenkins_plugin_manager --plugins antisamy-markup-formatter	# OWASP Markup Formatter Plugin
-$jenkins_plugin_manager --plugins pam-auth	# PAM Authentication plugin
-$jenkins_plugin_manager --plugins mailer	# Mailer Plugin
-$jenkins_plugin_manager --plugins ldap	# LDAP Plugin
-$jenkins_plugin_manager --plugins matrix-auth	# Matrix Authorization Strategy Plugin
-$jenkins_plugin_manager --plugins build-timeout	# Build timeout plugin
-$jenkins_plugin_manager --plugins credentials-binding	# Credentials Binding Plugin
-$jenkins_plugin_manager --plugins timestamper	# Timestamper
-$jenkins_plugin_manager --plugins ws-cleanup	# Workspace Cleanup Plugin
-$jenkins_plugin_manager --plugins ant	# Ant Plugin
-$jenkins_plugin_manager --plugins gradle	# Gradle Plugin
-$jenkins_plugin_manager --plugins workflow-aggregator	# Pipeline
-$jenkins_plugin_manager --plugins pipeline-stage-view	# Pipeline: Stage View Plugin
-$jenkins_plugin_manager --plugins git	# Git plugin
-$jenkins_plugin_manager --plugins github-branch-source	# GitHub Branch Source Plugin
-$jenkins_plugin_manager --plugins subversion	# Subversion Plug-in
-$jenkins_plugin_manager --plugins email-ext	# Email Extension Plugin
-$jenkins_plugin_manager --plugins ssh-slaves	# SSH Slaves plugin
-
-# Install extra comfort plugins
-# Handle terminal colours. Enhance the readability of the terminal.
-$jenkins_plugin_manager --plugins ansicolor
-# Monitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
-$jenkins_plugin_manager --plugins fstrigger
 
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
 ynh_script_progression --message="Adding a configuration file..."
 
-ynh_add_config --template="../conf/config.xml" --destination="$final_path/config.xml"
-
-chown $app:$app "$final_path/config.xml"
+ynh_add_config --template="config.xml" --destination="$install_dir/config.xml"
+chown "$app:$app" "$install_dir/config.xml"
 
 #=================================================
-# GENERIC FINALIZATION
+# INSTALL PLUGINS
 #=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression --message="Installing plugins..."
 
-yunohost service add $app --description="Jenkins Continuous Integration Server"
+jenkins_plugin_manager=(
+    ynh_exec_warn_less java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+)
+
+# Install plugins for http authentication and ldap.
+"${jenkins_plugin_manager[@]}" --plugins reverse-proxy-auth-plugin
+
+# Install recommended plugins (those from Setup Wizard)
+"${jenkins_plugin_manager[@]}" --plugins cloudbees-folder	# Folders Plugin
+"${jenkins_plugin_manager[@]}" --plugins antisamy-markup-formatter	# OWASP Markup Formatter Plugin
+"${jenkins_plugin_manager[@]}" --plugins pam-auth	# PAM Authentication plugin
+"${jenkins_plugin_manager[@]}" --plugins mailer	# Mailer Plugin
+"${jenkins_plugin_manager[@]}" --plugins ldap	# LDAP Plugin
+"${jenkins_plugin_manager[@]}" --plugins matrix-auth	# Matrix Authorization Strategy Plugin
+"${jenkins_plugin_manager[@]}" --plugins build-timeout	# Build timeout plugin
+"${jenkins_plugin_manager[@]}" --plugins credentials-binding	# Credentials Binding Plugin
+"${jenkins_plugin_manager[@]}" --plugins timestamper	# Timestamper
+"${jenkins_plugin_manager[@]}" --plugins ws-cleanup	# Workspace Cleanup Plugin
+"${jenkins_plugin_manager[@]}" --plugins ant	# Ant Plugin
+"${jenkins_plugin_manager[@]}" --plugins gradle	# Gradle Plugin
+"${jenkins_plugin_manager[@]}" --plugins workflow-aggregator	# Pipeline
+"${jenkins_plugin_manager[@]}" --plugins pipeline-stage-view	# Pipeline: Stage View Plugin
+"${jenkins_plugin_manager[@]}" --plugins git	# Git plugin
+"${jenkins_plugin_manager[@]}" --plugins github-branch-source	# GitHub Branch Source Plugin
+"${jenkins_plugin_manager[@]}" --plugins subversion	# Subversion Plug-in
+"${jenkins_plugin_manager[@]}" --plugins email-ext	# Email Extension Plugin
+"${jenkins_plugin_manager[@]}" --plugins ssh-slaves	# SSH Slaves plugin
+
+# Install extra comfort plugins
+# Handle terminal colours. Enhance the readability of the terminal.
+"${jenkins_plugin_manager[@]}" --plugins ansicolor
+# Monitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
+"${jenkins_plugin_manager[@]}" --plugins fstrigger
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
+
+# Service is provided by the deb package
+yunohost service add "$app" --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
@@ -208,44 +129,7 @@ yunohost service add $app --description="Jenkins Continuous Integration Server"
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring permissions..."
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-# /path/github-webhook has to be accessible for github's webhooks
-ynh_permission_create --permission="github-webhook" --url="/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
-
-ynh_systemd_action --service_name=nginx --action=reload
-
-#=================================================
-# SEND A README FOR THE ADMIN
-#=================================================
-
-# Get main domain and buid the url of the admin panel of the app.
-admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
-
-echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
-You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
-
-If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__." > mail_to_send
-
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=install
+ynh_systemd_action --service_name="$app" --action="restart" --line_match="Started" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
