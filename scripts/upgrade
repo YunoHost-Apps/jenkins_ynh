@@ -110,8 +110,8 @@ if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
 	ynh_script_progression --message="Upgrading source files..."
 	# Download jenkins deb file and install it.
-	ynh_setup_source --dest_dir="../conf"
-	ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
+	ynh_setup_source --dest_dir="../conf" --full_replace=1
+	ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path" --full_replace=1
 	chmod 750 "$final_path"
 	chmod -R o-rwx "$final_path"
 	chown -R $app:$app "$final_path"
