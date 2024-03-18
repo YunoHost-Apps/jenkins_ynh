@@ -58,8 +58,10 @@ ram.runtime = "50M" # FIXME: replace with an **estimate** minimum ram requiremen
     rename = "jenkins.deb"
 
     [resources.system_user]
+    home = "/var/lib/jenkins"
 
     [resources.install_dir]
+    dir = "/var/lib/jenkins"
 
     [resources.permissions]
     main.url = "/"
