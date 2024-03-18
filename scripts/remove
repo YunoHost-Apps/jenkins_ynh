@@ -1,8 +1,6 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC START
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
@@ -19,7 +17,7 @@ if ynh_exec_warn_less yunohost service status "$app" >/dev/null; then
     yunohost service remove "$app"
 fi
 
-ynh_systemd_action --service_name="$app" --action="stop" --line_match="Stopped" --log_path="systemd"
+ynh_systemd_action --service_name="$app" --action="stop" --log_path="systemd"
 
 # Remove the dedicated NGINX config
 ynh_remove_nginx_config

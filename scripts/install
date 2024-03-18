@@ -1,13 +1,10 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC START
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
 source _common.sh
-source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -15,7 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 jenkins_version=$(ynh_app_upstream_version)
-ynh_app_setting_set --app=$app --key=overwrite_nginx --value=1
+ynh_app_setting_set --app="$app" --key="overwrite_nginx" --value="1"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -29,8 +26,6 @@ ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 chmod -R o-rwx "$install_dir"
 chown -R "$app:$app" "$install_dir"
 
-#=================================================
-# SPECIFIC SETUP
 #=================================================
 # INSTALL JENKINS
 #=================================================
@@ -59,7 +54,7 @@ ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
     --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 systemctl daemon-reload --quiet
 
-ynh_systemd_action --service_name="$app" --action="restart" --line_match="Started" --log_path="systemd"
+ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
     dpkg --configure -a
@@ -129,7 +124,7 @@ yunohost service add "$app" --description="Jenkins Continuous Integration Server
 ynh_script_progression --message="Starting a systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name="$app" --action="restart" --line_match="Started" --log_path="systemd"
+ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
