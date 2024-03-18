@@ -17,14 +17,9 @@ source /usr/share/yunohost/helpers
 # Otherwise, keep the value from the app config.
 
 # Overwrite nginx configuration
-old_overwrite_nginx="$(ynh_app_setting_get --app=$app --key=overwrite_nginx)"
-old_overwrite_nginx=$(b01_to_bool $old_overwrite_nginx)
+old_overwrite_nginx="$(ynh_app_setting_get --app="$app" --key="overwrite_nginx")"
+old_overwrite_nginx=$(b01_to_bool "$old_overwrite_nginx")
 overwrite_nginx="${YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX:-$old_overwrite_nginx}"
-
-# Type of admin mail configuration
-old_admin_mail_html="$(ynh_app_setting_get --app=$app --key=admin_mail_html)"
-old_admin_mail_html=$(b01_to_bool $old_admin_mail_html)
-admin_mail_html="${YNH_CONFIG_MAIN_GLOBAL_CONFIG_EMAIL_TYPE:-$old_admin_mail_html}"
 
 #=================================================
 # SHOW_CONFIG FUNCTION FOR 'SHOW' COMMAND
@@ -35,8 +30,6 @@ show_config() {
 	# echo "YNH_CONFIG_${PANEL_ID}_${SECTION_ID}_${OPTION_ID}=value"
 
 	echo "YNH_CONFIG_MAIN_OVERWRITE_FILES_OVERWRITE_NGINX=$overwrite_nginx"
-
-	echo "YNH_CONFIG_MAIN_GLOBAL_CONFIG_EMAIL_TYPE=$admin_mail_html"
 }
 
 #=================================================
@@ -44,17 +37,12 @@ show_config() {
 #=================================================
 
 apply_config() {
-
 	# Set overwrite_nginx
-	overwrite_nginx=$(bool_to_01 $overwrite_nginx)
-	ynh_app_setting_set --app=$app --key=overwrite_nginx --value="$overwrite_nginx"
-
-	# Set admin_mail_html
-	admin_mail_html=$(bool_to_01 $admin_mail_html)
-	ynh_app_setting_set --app=$app --key=admin_mail_html --value="$admin_mail_html"
+	overwrite_nginx=$(bool_to_01 "$overwrite_nginx")
+	ynh_app_setting_set --app="$app" --key=overwrite_nginx --value="$overwrite_nginx"
 }
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
-ynh_app_config_run $1
+ynh_app_config_run "$1"
