@@ -16,16 +16,13 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 ## Overview
 
-Extendable continuous integration server
-**Shipped version:** 2.426.3~ynh1
+The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
+
+**Shipped version:** 2.426.3~ynh2
 
 ## Screenshots
 
 ![Screenshot of Jenkins](./doc/screenshots/screenshot1.png)
-
-## Disclaimers / important information
-
-* Use the admin panel of your Jenkins to configure this app.
 
 ## Documentation and resources
 
