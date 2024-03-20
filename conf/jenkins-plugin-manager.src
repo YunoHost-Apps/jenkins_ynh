@@ -1,7 +1,0 @@
-SOURCE_URL=https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.12.8/jenkins-plugin-manager-2.12.8.jar
-SOURCE_SUM=e5b22868c498c311ea1b776e9087af199b795ddbf0bc0474b0b4ca9e67837f26
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=jar
-SOURCE_IN_SUBDIR=false
-SOURCE_FILENAME=jenkins-plugin-manager.jar
-SOURCE_EXTRACT=false

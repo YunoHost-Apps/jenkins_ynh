@@ -4,11 +4,6 @@
 # COMMON VARIABLES
 #=================================================
 
-# dependencies used by the app
-pkg_dependencies="openjdk-11-jdk|openjdk-17-jdk daemon net-tools"
-
-PLUGIN_CLI_VERSION=2.9.3
-
 #=================================================
 # PERSONAL HELPERS
 #=================================================
@@ -17,18 +12,14 @@ PLUGIN_CLI_VERSION=2.9.3
 # BOOLEAN CONVERTER
 #=================================================
 
-bool_to_01 () {
-	local var="$1"
-	[ "$var" = "true" ] && var=1
-	[ "$var" = "false" ] && var=0
-	echo "$var"
+bool_to_01() {
+    declare -A bool01=([false]=0 [true]=1)
+    echo "${bool01[$1]}"
 }
 
-bool_to_true_false () {
-	local var="$1"
-	[ "$var" = "1" ] && var=true
-	[ "$var" = "0" ] && var=false
-	echo "$var"
+b01_to_bool() {
+    declare -A b01bool=([0]=false [1]=true)
+    echo "${b01bool[$1]}"
 }
 
 #=================================================

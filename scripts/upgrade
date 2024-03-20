@@ -1,58 +1,18 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC START
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
 source _common.sh
-source ynh_send_readme_to_admin__2
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
-#=================================================
-ynh_script_progression --message="Loading installation settings..."
-
-app=$YNH_APP_INSTANCE_NAME
-
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-port=$(ynh_app_setting_get --app=$app --key=port)
-overwrite_nginx=$(ynh_app_setting_get --app=$app --key=overwrite_nginx)
-
-#=================================================
-# CHECK VERSION
-#=================================================
-ynh_script_progression --message="Checking version..."
-
-upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..."
-
-# Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
-	ynh_clean_check_starting
-	# Restore it if the upgrade fails
-	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping a systemd service..."
+ynh_script_progression --message="Stopping $app's systemd service..."
 
-ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --log_path="systemd"
+ynh_systemd_action --service_name="$app" --action="stop" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -60,32 +20,17 @@ ynh_systemd_action --service_name=$app --action="stop" --line_match="Stopped" --
 ynh_script_progression --message="Ensuring downward compatibility..."
 
 # If overwrite_nginx doesn't exist, create it
-if [ -z "$overwrite_nginx" ]; then
-	overwrite_nginx=1
-	ynh_app_setting_set --app=$app --key=overwrite_nginx --value=$overwrite_nginx
+if [ -z "${overwrite_nginx:-}" ]; then
+    overwrite_nginx=1
+    ynh_app_setting_set --app="$app" --key="overwrite_nginx" --value="$overwrite_nginx"
 fi
 
 # Remove the apt list entry for jenkins
-if [ -e "/etc/apt/sources.list.d/jenkins.list" ]
-then
-	ynh_secure_remove --file=/etc/apt/sources.list.d/jenkins.list
-	# Get APT key id for jenkins
-	apt_key=$(apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)
-	# Delete the APT key
-	apt-key del $apt_key
-	apt-get update
-fi
-
-# Cleaning legacy permissions
-if ynh_legacy_permissions_exists; then
-	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
-
-# Create a permission if needed
-if ! ynh_permission_exists --permission="github-webhook"; then
-	ynh_permission_create --permission="github-webhook" --url="/github-webhook" --allowed="visitors" --show_tile="false" --protected="true"
+if [ -e "/etc/apt/sources.list.d/jenkins.list" ]; then
+    ynh_secure_remove --file=/etc/apt/sources.list.d/jenkins.list
+    # Delete the APT key
+    apt-key del "$(apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)"
+    apt-get update
 fi
 
 # Remove the log files
@@ -95,119 +40,63 @@ ynh_secure_remove --file="/var/log/$app"
 ynh_delete_file_checksum --file="/etc/default/jenkins"
 
 #=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..."
-
-# Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app --home_dir="$final_path"
-
-#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
+ynh_script_progression --message="Upgrading source files..."
 
-if [ "$upgrade_type" == "UPGRADE_APP" ]
-then
-	ynh_script_progression --message="Upgrading source files..."
-	# Download jenkins deb file and install it.
-	ynh_setup_source --dest_dir="../conf"
-	ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$final_path"
-	chmod 750 "$final_path"
-	chmod -R o-rwx "$final_path"
-	chown -R $app:$app "$final_path"
+# Download jenkins deb file and install it.
+ynh_setup_source --dest_dir="$install_dir"
+ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 
-	dpkg --install --force-confnew ../conf/jenkins.deb
+chmod -R o-rwx "$install_dir"
+chown -R "$app:$app" "$install_dir"
 
-	#=================================================
-	# SETUP APPLICATION
-	#=================================================
-	ynh_script_progression --message="Setuping application..."
-
-	ynh_replace_string --match_string="Environment=\"JENKINS_PORT=8080\"" --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path_url\"" --target_file="/lib/systemd/system/jenkins.service"
-
-	systemctl daemon-reload --quiet
-
-	ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
-fi
+dpkg --install --force-confnew "$install_dir/jenkins.deb"
 
 #=================================================
-# UPGRADE DEPENDENCIES
+# SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..."
+ynh_script_progression --message="Setting up application..."
 
-ynh_install_app_dependencies $pkg_dependencies
+ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
+    --match_string="Environment=\"JENKINS_PORT=8080\"" \
+    --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+systemctl daemon-reload --quiet
 
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-
-# Overwrite the nginx configuration only if it's allowed
-if [ $overwrite_nginx -eq 1 ]
-then
-	ynh_script_progression --message="Upgrading NGINX web server configuration..."
-
-	# Create a dedicated NGINX config
-	ynh_add_nginx_config
-fi
-
-#=================================================
-# SPECIFIC UPGRADE
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
-
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
 ynh_script_progression --message="Upgrading plugins..."
 
-jenkins_plugin_manager="ynh_exec_warn_less java -jar $final_path/jenkins-plugin-manager.jar --war /usr/share/java/jenkins.war --plugin-download-directory=$final_path/plugins"
-UPDATE_LIST=$($jenkins_plugin_manager --list | grep -o '.*\..*' | grep -oP '^(.*?) ')
+jenkins_plugin_manager=(
+    ynh_exec_warn_less java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+)
+mapfile -t UPDATE_LIST < <("${jenkins_plugin_manager[@]}" --list | grep -o '.*\..*' | grep -oP '^(.*?) ')
 
-for plugin in ${UPDATE_LIST}
-do
-	$jenkins_plugin_manager --plugins "$plugin" || true
+for plugin in "${UPDATE_LIST[@]}"; do
+    "${jenkins_plugin_manager[@]}" --plugins "$plugin" || true
 done
 
 #=================================================
-# GENERIC FINALIZATION
+# REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
 
-yunohost service add $app --description="Jenkins Continuous Integration Server"
+# Overwrite the nginx configuration only if it's allowed
+if [ "$overwrite_nginx" -eq 1 ]; then
+    ynh_add_nginx_config
+fi
+
+yunohost service add "$app" --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..."
+ynh_script_progression --message="Starting $app's systemd service..."
 
-ynh_systemd_action --service_name=$app --action="restart" --line_match="Started" --log_path="systemd"
-
-#=================================================
-# SEND A README FOR THE ADMIN
-#=================================================
-
-# Get main domain and buid the url of the admin panel of the app.
-admin_panel="https://$(grep portal_domain /etc/ssowat/conf.json | cut -d'"' -f4)/yunohost/admin/#/apps/$app"
-
-echo "You can configure this app easily by using the experimental __URL_TAG1__config-panel feature__URL_TAG2__$admin_panel/config-panel__URL_TAG3__.
-You can also find some specific actions for this app by using the experimental __URL_TAG1__action feature__URL_TAG2__$admin_panel/actions__URL_TAG3__.
-
-If you're facing an issue or want to improve this app, please open a new issue in this __URL_TAG1__project__URL_TAG2__https://github.com/YunoHost-Apps/jenkins_ynh__URL_TAG3__." > mail_to_send
-
-ynh_send_readme_to_admin --app_message="mail_to_send" --recipients="root" --type=upgrade
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
-
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
