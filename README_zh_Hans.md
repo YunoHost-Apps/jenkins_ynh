@@ -3,7 +3,7 @@
 请勿手动编辑。
 -->
 
-# YunoHost 的 Jenkins
+# YunoHost 上的 Jenkins
 
 [![集成程度](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![工作状态](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
 
