@@ -5,7 +5,7 @@ NON debe editarse manualmente.
 
 # Jenkins para YunoHost
 
-[![Nivel de integración](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![Estado de funcionamento](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Estado de mantemento](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Nivel de integración](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Estado de funcionamento](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Estado de mantemento](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
 
 [![Instalar Jenkins con YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 

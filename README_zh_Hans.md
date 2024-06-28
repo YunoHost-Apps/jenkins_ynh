@@ -5,7 +5,7 @@
 
 # YunoHost 上的 Jenkins
 
-[![集成程度](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![工作状态](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![集成程度](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![工作状态](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
 
 [![使用 YunoHost 安装 Jenkins](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
