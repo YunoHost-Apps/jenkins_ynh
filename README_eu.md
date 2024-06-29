@@ -5,7 +5,7 @@ EZ editatu eskuz.
 
 # Jenkins YunoHost-erako
 
-[![Integrazio maila](https://dash.yunohost.org/integration/jenkins.svg)](https://dash.yunohost.org/appci/app/jenkins) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Integrazio maila](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
 
 [![Instalatu Jenkins YunoHost-ekin](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 

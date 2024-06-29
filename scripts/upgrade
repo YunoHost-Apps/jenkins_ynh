@@ -19,12 +19,6 @@ ynh_systemd_action --service_name="$app" --action="stop" --log_path="systemd"
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..."
 
-# If overwrite_nginx doesn't exist, create it
-if [ -z "${overwrite_nginx:-}" ]; then
-    overwrite_nginx=1
-    ynh_app_setting_set --app="$app" --key="overwrite_nginx" --value="$overwrite_nginx"
-fi
-
 # Remove the apt list entry for jenkins
 if [ -e "/etc/apt/sources.list.d/jenkins.list" ]; then
     ynh_secure_remove --file=/etc/apt/sources.list.d/jenkins.list
@@ -84,10 +78,7 @@ done
 #=================================================
 ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
 
-# Overwrite the nginx configuration only if it's allowed
-if [ "$overwrite_nginx" -eq 1 ]; then
-    ynh_add_nginx_config
-fi
+ynh_add_nginx_config
 
 yunohost service add "$app" --description="Jenkins Continuous Integration Server"
 
