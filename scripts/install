@@ -16,44 +16,43 @@ jenkins_version=$(ynh_app_upstream_version)
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Setting up source files..."
+ynh_script_progression "Setting up source files..."
 
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 
-chmod -R o-rwx "$install_dir"
-chown -R "$app:$app" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:$app" "$install_dir"
 #=================================================
 # INSTALL JENKINS
 #=================================================
-ynh_script_progression --message="Installing Jenkins..."
+ynh_script_progression "Installing Jenkins..."
 
 # Download jenkins deb file and install it.
 dpkg --install --force-confnew "$install_dir/jenkins.deb" || true
 dpkg_install_failed=$(dpkg-query -f '${status} ${package}\n' -W | awk '$4 ~ /^jenkins.*/ && $3 != "installed" {print $4}' | wc -l)
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
-    ynh_print_warn --message="The service jenkins cannot be started for now."
+    ynh_print_warn "The service jenkins cannot be started for now."
 fi
 
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setting up application on port $port..."
+ynh_script_progression "Setting up application on port $port..."
 
 echo "$jenkins_version" >> "$install_dir/jenkins.install.InstallUtil.lastExecVersion"
 echo "$jenkins_version" >> "$install_dir/jenkins.install.UpgradeWizard.state"
 chown "$app:$app" "$install_dir/jenkins.install.InstallUtil.lastExecVersion"
 chown "$app:$app" "$install_dir/jenkins.install.UpgradeWizard.state"
 
-ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
-    --match_string="Environment=\"JENKINS_PORT=8080\"" \
-    --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+ynh_replace --file="/lib/systemd/system/jenkins.service" \
+    --match="Environment=\"JENKINS_PORT=8080\"" \
+    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 systemctl daemon-reload --quiet
 
-ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
     dpkg --configure -a
@@ -62,18 +61,18 @@ fi
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding a configuration file..."
+ynh_script_progression "Adding $app's configuration..."
 
-ynh_add_config --template="config.xml" --destination="$install_dir/config.xml"
-chown "$app:$app" "$install_dir/config.xml"
+ynh_config_add --template="config.xml" --destination="$install_dir/config.xml"
+#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown "$app:$app" "$install_dir/config.xml"
 
 #=================================================
 # INSTALL PLUGINS
 #=================================================
-ynh_script_progression --message="Installing plugins..."
+ynh_script_progression "Installing plugins..."
 
 jenkins_plugin_manager=(
-    ynh_exec_warn_less java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+    ynh_hide_warnings java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
 )
 
 # Install plugins for http authentication and ldap.
@@ -109,10 +108,10 @@ jenkins_plugin_manager=(
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+ynh_script_progression "Adding system configurations related to $app..."
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 # Service is provided by the deb package
 yunohost service add "$app" --description="Jenkins Continuous Integration Server"
@@ -120,13 +119,13 @@ yunohost service add "$app" --description="Jenkins Continuous Integration Server
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..."
+ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
-ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed"
+ynh_script_progression "Installation of $app completed"

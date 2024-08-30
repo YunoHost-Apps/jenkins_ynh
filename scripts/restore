@@ -11,16 +11,15 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..." --weight=1
+ynh_script_progression "Restoring the app main directory..."
 
-ynh_restore_file --origin_path="$install_dir" --not_mandatory
+ynh_restore "$install_dir" || true
 
-chown -R "$app:www-data" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:www-data" "$install_dir"
 #=================================================
 # INSTALL JENKINS
 #=================================================
-ynh_script_progression --message="Installing Jenkins..."
+ynh_script_progression "Installing Jenkins..."
 
 # Download jenkins deb file and install it.
 ynh_setup_source --dest_dir="../conf"
@@ -29,34 +28,34 @@ dpkg --install --force-confnew ../conf/jenkins.deb
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setting up $app's service..."
+ynh_script_progression "Setting up $app's service..."
 
-ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
-    --match_string="Environment=\"JENKINS_PORT=8080\"" \
-    --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+ynh_replace --file="/lib/systemd/system/jenkins.service" \
+    --match="Environment=\"JENKINS_PORT=8080\"" \
+    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 
 systemctl daemon-reload --quiet
 
 #=================================================
 # RESTORE SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Restoring system configurations related to $app..." --weight=1
+ynh_script_progression "Restoring system configurations related to $app..."
 
-ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 yunohost service add "$app" --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # RELOAD NGINX AND PHP-FPM OR THE APP SERVICE
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server and $app's service..." --weight=1
+ynh_script_progression "Reloading NGINX web server and $app's service..."
 
-ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
 
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemctl --service=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Restoration completed for $app"
+ynh_script_progression "Restoration completed for $app"
