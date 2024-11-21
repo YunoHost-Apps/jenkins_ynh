@@ -19,7 +19,7 @@ No se debe editar a mano.
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**Versión actual:** 2.426.3~ynh2
+**Versión actual:** 2.479.1~ynh2
 
 ## Capturas
 
@@ -35,7 +35,7 @@ The leading open source automation server, Jenkins provides hundreds of plugins 
 
 ## Información para desarrolladores
 
-Por favor enviar sus correcciones a la [`branch testing`](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing
+Por favor enviar sus correcciones a la [rama `testing`](https://github.com/YunoHost-Apps/jenkins_ynh/tree/testing).
 
 Para probar la rama `testing`, sigue asÍ:
 
