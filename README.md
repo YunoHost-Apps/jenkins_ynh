@@ -19,7 +19,7 @@ It shall NOT be edited by hand.
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**Shipped version:** 2.426.3~ynh2
+**Shipped version:** 2.479.1~ynh2
 
 ## Screenshots
 
