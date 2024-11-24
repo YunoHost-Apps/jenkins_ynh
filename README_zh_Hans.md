@@ -19,7 +19,7 @@
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**分发版本：** 2.426.3~ynh2
+**分发版本：** 2.479.1~ynh2
 
 ## 截图
 
