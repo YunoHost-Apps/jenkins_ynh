@@ -5,7 +5,9 @@
 
 # YunoHost 上的 Jenkins
 
-[![集成程度](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![工作状态](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![集成程度](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![工作状态](https://apps.yunohost.org/badge/state/jenkins)
+![维护状态](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![使用 YunoHost 安装 Jenkins](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
@@ -19,7 +21,7 @@
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**分发版本：** 2.426.3~ynh2
+**分发版本：** 2.479.1~ynh2
 
 ## 截图
 
