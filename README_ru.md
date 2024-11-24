@@ -5,7 +5,9 @@
 
 # Jenkins для YunoHost
 
-[![Уровень интеграции](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Состояние работы](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Состояние сопровождения](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Уровень интеграции](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![Состояние работы](https://apps.yunohost.org/badge/state/jenkins)
+![Состояние сопровождения](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![Установите Jenkins с YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 

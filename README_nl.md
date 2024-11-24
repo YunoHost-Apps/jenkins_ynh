@@ -5,7 +5,9 @@ Hij mag NIET handmatig aangepast worden.
 
 # Jenkins voor Yunohost
 
-[![Integratieniveau](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Mate van functioneren](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Onderhoudsstatus](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Integratieniveau](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![Mate van functioneren](https://apps.yunohost.org/badge/state/jenkins)
+![Onderhoudsstatus](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![Jenkins met Yunohost installeren](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 

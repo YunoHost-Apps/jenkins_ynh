@@ -5,7 +5,9 @@ Ini TIDAK boleh diedit dengan tangan.
 
 # Jenkins untuk YunoHost
 
-[![Tingkat integrasi](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Status kerja](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Status pemeliharaan](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Tingkat integrasi](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![Status kerja](https://apps.yunohost.org/badge/state/jenkins)
+![Status pemeliharaan](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![Pasang Jenkins dengan YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
