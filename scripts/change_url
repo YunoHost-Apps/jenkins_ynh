@@ -12,17 +12,18 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Stopping $app's systemd service..."
 
-ynh_systemctl --service=$app --action="stop" --log_path="systemd"
+ynh_systemctl --service="$app" --action="stop" --log_path="systemd"
 
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
 ynh_script_progression "Updating NGINX web server configuration..."
 
+# this will most likely adjust NGINX config correctly
 ynh_config_change_url_nginx
 
 #=================================================
-# MODIFY JENKINS SETUP
+# SPECIFIC MODIFICATIONS
 #=================================================
 ynh_script_progression "Updating Jenkins setup..."
 
@@ -37,7 +38,6 @@ systemctl daemon-reload --quiet
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-# Start a systemd service
 ynh_systemctl --service="$app" --action="start" --log_path="systemd"
 
 #=================================================

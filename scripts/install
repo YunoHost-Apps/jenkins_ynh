@@ -8,7 +8,7 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
+# INITIALIZE AND STORE SETTINGS
 #=================================================
 
 jenkins_version=$(ynh_app_upstream_version)
@@ -18,12 +18,10 @@ jenkins_version=$(ynh_app_upstream_version)
 #=================================================
 ynh_script_progression "Setting up source files..."
 
-# Download, check integrity, uncompress and patch the source from app.src
+# Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:$app" "$install_dir"
 #=================================================
 # INSTALL JENKINS
 #=================================================
@@ -36,6 +34,7 @@ dpkg_install_failed=$(dpkg-query -f '${status} ${package}\n' -W | awk '$4 ~ /^je
 if [[ $dpkg_install_failed -ge 1 ]]; then
     ynh_print_warn "The service jenkins cannot be started for now."
 fi
+ynh_safe_rm "$install_dir/jenkins.deb"
 
 #=================================================
 # SETUP APPLICATION
@@ -59,12 +58,11 @@ if [[ $dpkg_install_failed -ge 1 ]]; then
 fi
 
 #=================================================
-# ADD A CONFIGURATION
+# APP INITIAL CONFIGURATION
 #=================================================
-ynh_script_progression "Adding $app's configuration..."
+ynh_script_progression "Adding $app's configuration files..."
 
 ynh_config_add --template="config.xml" --destination="$install_dir/config.xml"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown "$app:$app" "$install_dir/config.xml"
 
 #=================================================
 # INSTALL PLUGINS
@@ -105,12 +103,14 @@ jenkins_plugin_manager=(
 # Monitoring of the local file system. Allow to monitor a directory and trig a job if a file has been modified.
 "${jenkins_plugin_manager[@]}" --plugins fstrigger
 
+ynh_safe_rm "$install_dir/jenkins-plugin-manager.jar"
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
 ynh_script_progression "Adding system configurations related to $app..."
 
-# Create a dedicated NGINX config
+# Create a dedicated NGINX config using the conf/nginx.conf template
 ynh_config_add_nginx
 
 # Service is provided by the deb package

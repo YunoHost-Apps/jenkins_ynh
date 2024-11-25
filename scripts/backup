@@ -14,10 +14,10 @@ ynh_print_info "Declaring files to be backed up..."
 # BACKUP THE APP MAIN DIR
 #=================================================
 
-ynh_backup "$install_dir" || true
+ynh_backup "$install_dir"
 
 #=================================================
-# BACKUP THE SYSTEM CONFIGURATION
+# SYSTEM CONFIGURATION
 #=================================================
 
 ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
