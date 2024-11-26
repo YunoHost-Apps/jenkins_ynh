@@ -5,7 +5,9 @@ EZ editatu eskuz.
 
 # Jenkins YunoHost-erako
 
-[![Integrazio maila](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Integrazio maila](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![Funtzionamendu egoera](https://apps.yunohost.org/badge/state/jenkins)
+![Mantentze egoera](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![Instalatu Jenkins YunoHost-ekin](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
@@ -19,7 +21,7 @@ EZ editatu eskuz.
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**Paketatutako bertsioa:** 2.426.3~ynh2
+**Paketatutako bertsioa:** 2.479.1~ynh2
 
 ## Pantaila-argazkiak
 

@@ -5,7 +5,9 @@ It shall NOT be edited by hand.
 
 # Jenkins for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/jenkins.svg)](https://ci-apps.yunohost.org/ci/apps/jenkins/) ![Working status](https://ci-apps.yunohost.org/ci/badges/jenkins.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/jenkins.maintain.svg)
+[![Integration level](https://apps.yunohost.org/badge/integration/jenkins)](https://ci-apps.yunohost.org/ci/apps/jenkins/)
+![Working status](https://apps.yunohost.org/badge/state/jenkins)
+![Maintenance status](https://apps.yunohost.org/badge/maintained/jenkins)
 
 [![Install Jenkins with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=jenkins)
 
@@ -19,7 +21,7 @@ It shall NOT be edited by hand.
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**Shipped version:** 2.426.3~ynh2
+**Shipped version:** 2.479.1~ynh2
 
 ## Screenshots
 
