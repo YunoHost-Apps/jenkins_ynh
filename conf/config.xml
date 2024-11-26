@@ -1,6 +1,8 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8'?>
 <hudson>
-	<disabledAdministrativeMonitors/>
+	<disabledAdministrativeMonitors>
+		<string>hudson.util.DoubleLaunchChecker</string>
+	</disabledAdministrativeMonitors>
 	<version>__JENKINS_VERSION__</version>
 	<numExecutors>2</numExecutors>
 	<mode>NORMAL</mode>
@@ -9,20 +11,26 @@
 		<denyAnonymousReadAccess>false</denyAnonymousReadAccess>
 	</authorizationStrategy>
 	<securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.13">
-		<server>ldap://localhost:389/</server>
-		<rootDN>dc=yunohost,dc=org</rootDN>
-		<inhibitInferRootDN>false</inhibitInferRootDN>
-		<userSearchBase></userSearchBase>
-		<userSearch>uid={0}</userSearch>
-		<groupMembershipStrategy class="jenkins.security.plugins.ldap.FromGroupSearchLDAPGroupMembershipStrategy">
-			<filter></filter>
-		</groupMembershipStrategy>
-		<managerPasswordSecret></managerPasswordSecret>
 		<disableMailAddressResolver>false</disableMailAddressResolver>
-		<displayNameAttributeName>displayname</displayNameAttributeName>
-		<mailAddressAttributeName>mail</mailAddressAttributeName>
+		<configurations>
+			<jenkins.security.plugins.ldap.LDAPConfiguration>
+				<server>ldap://localhost:389/</server>
+				<rootDN>dc=yunohost,dc=org</rootDN>
+				<inhibitInferRootDN>false</inhibitInferRootDN>
+				<userSearchBase></userSearchBase>
+				<userSearch>uid={0}</userSearch>
+				<groupMembershipStrategy class="jenkins.security.plugins.ldap.FromGroupSearchLDAPGroupMembershipStrategy">
+					<filter></filter>
+				</groupMembershipStrategy>
+				<managerPasswordSecret></managerPasswordSecret>
+				<displayNameAttributeName>displayname</displayNameAttributeName>
+				<mailAddressAttributeName>mail</mailAddressAttributeName>
+				<ignoreIfUnavailable>false</ignoreIfUnavailable>
+			</jenkins.security.plugins.ldap.LDAPConfiguration>
+		</configurations>
 		<userIdStrategy class="jenkins.model.IdStrategy$CaseInsensitive"/>
 		<groupIdStrategy class="jenkins.model.IdStrategy$CaseInsensitive"/>
+		<disableRolePrefixing>false</disableRolePrefixing>
 	</securityRealm>
 	<disableRememberMe>false</disableRememberMe>
 	<projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
@@ -33,6 +41,7 @@
 	<viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
 	<myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
 	<clouds/>
+	<quietPeriod>5</quietPeriod>
 	<scmCheckoutRetryCount>0</scmCheckoutRetryCount>
 	<views>
 		<hudson.model.AllView>
@@ -46,6 +55,9 @@
 	<primaryView>all</primaryView>
 	<slaveAgentPort>0</slaveAgentPort>
 	<label></label>
+	<crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
+		<excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>
+	</crumbIssuer>
 	<nodeProperties/>
 	<globalNodeProperties/>
 </hudson>

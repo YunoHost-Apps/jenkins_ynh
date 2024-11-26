@@ -10,62 +10,60 @@ source /usr/share/yunohost/helpers
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping $app's systemd service..."
+ynh_script_progression "Stopping $app's systemd service..."
 
-ynh_systemd_action --service_name="$app" --action="stop" --log_path="systemd"
+ynh_systemctl --service="$app" --action="stop" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression "Ensuring downward compatibility..."
 
 # Remove the apt list entry for jenkins
 if [ -e "/etc/apt/sources.list.d/jenkins.list" ]; then
-    ynh_secure_remove --file=/etc/apt/sources.list.d/jenkins.list
+    ynh_safe_rm /etc/apt/sources.list.d/jenkins.list
     # Delete the APT key
     apt-key del "$(apt-key list | grep -B1 "Kohsuke Kawaguchi" | grep pub | cut -d'/' -f2 | cut -d' ' -f1)"
     apt-get update
 fi
 
 # Remove the log files
-ynh_secure_remove --file="/var/log/$app"
+ynh_safe_rm "/var/log/$app"
 
 # No more needed since systemd
-ynh_delete_file_checksum --file="/etc/default/jenkins"
+ynh_delete_file_checksum "/etc/default/jenkins"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Upgrading source files..."
+ynh_script_progression "Upgrading source files..."
 
-# Download jenkins deb file and install it.
+# Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
 
-chmod -R o-rwx "$install_dir"
-chown -R "$app:$app" "$install_dir"
-
 dpkg --install --force-confnew "$install_dir/jenkins.deb"
+ynh_safe_rm "$install_dir/jenkins.deb"
 
 #=================================================
 # SETUP APPLICATION
 #=================================================
-ynh_script_progression --message="Setting up application..."
+ynh_script_progression "Setting up application..."
 
-ynh_replace_string --target_file="/lib/systemd/system/jenkins.service" \
-    --match_string="Environment=\"JENKINS_PORT=8080\"" \
-    --replace_string="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+ynh_replace --file="/lib/systemd/system/jenkins.service" \
+    --match="Environment=\"JENKINS_PORT=8080\"" \
+    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 systemctl daemon-reload --quiet
 
-ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # UPGRADE PLUGINS
 #=================================================
-ynh_script_progression --message="Upgrading plugins..."
+ynh_script_progression "Upgrading plugins..."
 
 jenkins_plugin_manager=(
-    ynh_exec_warn_less java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+    ynh_hide_warnings java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
 )
 mapfile -t UPDATE_LIST < <("${jenkins_plugin_manager[@]}" --list | grep -o '.*\..*' | grep -oP '^(.*?) ')
 
@@ -73,24 +71,26 @@ for plugin in "${UPDATE_LIST[@]}"; do
     "${jenkins_plugin_manager[@]}" --plugins "$plugin" || true
 done
 
+ynh_safe_rm "$install_dir/jenkins-plugin-manager.jar"
+
 #=================================================
 # REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
+ynh_script_progression "Upgrading system configurations related to $app..."
 
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 yunohost service add "$app" --description="Jenkins Continuous Integration Server"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting $app's systemd service..."
+ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemd_action --service_name="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed"
+ynh_script_progression "Upgrade of $app completed"
