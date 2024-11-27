@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.479.1~ynh2"
+version = "2.479.1~ynh3"
 
 maintainers = ["yalh76"]
 
@@ -20,11 +20,15 @@ cpe = "cpe:2.3:a:cloudbees:jenkins"
 fund = "https://www.jenkins.io/donate"
 
 [integration]
-yunohost = ">= 11.2"
+yunohost = ">= 11.2.30"
+helpers_version = "2.1"
 architectures = "all"
 multi_instance = false
+
 ldap = true
+
 sso = false
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "50M"
