@@ -21,7 +21,7 @@ EZ editatu eskuz.
 The leading open source automation server, Jenkins provides hundreds of plugins to support building, deploying and automating any project. 
 
 
-**Paketatutako bertsioa:** 2.479.1~ynh3
+**Paketatutako bertsioa:** 2.479.1~ynh4
 
 ## Pantaila-argazkiak
 
