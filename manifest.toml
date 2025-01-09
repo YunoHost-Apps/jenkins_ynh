@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.479.2~ynh1"
+version = "2.479.3~ynh1"
 
 maintainers = ["yalh76"]
 
@@ -55,8 +55,8 @@ ram.runtime = "50M"
     rename = "jenkins-plugin-manager.jar"
 
     [resources.sources.main]
-    url = "https://pkg.jenkins.io/debian-stable/binary/jenkins_2.479.2_all.deb"
-    sha256 = "426d9eaa1171a0a71f0484a78e3de7a007d307fa83e52c4ab77c5e9b06a02ddb"
+    url = "https://pkg.jenkins.io/debian-stable/binary/jenkins_2.479.3_all.deb"
+    sha256 = "646e3fb8a40b19e5348ae8aca833098d9da7b7ceb294b6929fd0e62cf9b87c4e"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
