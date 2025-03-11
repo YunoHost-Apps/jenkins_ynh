@@ -17,9 +17,10 @@ ynh_print_info "Declaring files to be backed up..."
 ynh_backup "$install_dir"
 
 #=================================================
-# SYSTEM CONFIGURATION
+# BACKUP SYSTEM CONFIGURATION
 #=================================================
 
+# Backup the NGINX configuration
 ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================

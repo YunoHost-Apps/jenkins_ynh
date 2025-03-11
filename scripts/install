@@ -51,7 +51,7 @@ ynh_replace --file="/lib/systemd/system/jenkins.service" \
     --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
 systemctl daemon-reload --quiet
 
-ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --wait_until="Jenkins is fully up and running" --log_path="systemd"
 
 if [[ $dpkg_install_failed -ge 1 ]]; then
     dpkg --configure -a
@@ -122,7 +122,7 @@ yunohost service add "$app" --description="Jenkins Continuous Integration Server
 ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
-ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --wait_until="Jenkins is fully up and running" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT

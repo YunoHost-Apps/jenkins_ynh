@@ -50,7 +50,7 @@ yunohost service add "$app" --description="Jenkins Continuous Integration Server
 #=================================================
 ynh_script_progression "Reloading NGINX web server and $app's service..."
 
-ynh_systemctl --service="$app" --action="restart" --log_path="systemd"
+ynh_systemctl --service="$app" --action="restart" --wait_until="Jenkins is fully up and running" --log_path="systemd"
 
 ynh_systemctl --service=nginx --action=reload
 
