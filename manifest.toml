@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.492.1~ynh1"
+version = "2.492.2~ynh1"
 
 maintainers = ["yalh76"]
 
@@ -17,6 +17,7 @@ website = "https://jenkins.io"
 userdoc = "https://www.jenkins.io/doc/book/"
 code = "https://github.com/jenkinsci/jenkins"
 cpe = "cpe:2.3:a:cloudbees:jenkins"
+
 fund = "https://www.jenkins.io/donate"
 
 [integration]
@@ -47,19 +48,25 @@ ram.runtime = "50M"
 
 [resources]
     [resources.sources]
+
+    [resources.sources.main]
+    url = "https://pkg.jenkins.io/debian-stable/binary/jenkins_2.492.2_all.deb"
+    sha256 = "03a47cda77918b924bbff87648cb686a413bb610f3b0867990408412f8e17220"
+    format = "whatever"
+    extract = false
+    rename = "jenkins.deb"
+    autoupdate.strategy = "latest_github_release"
+    autoupdate.asset = "^jenkins_*_all.deb$"
+    autoupdate.needs_manual_tweaks = true
+
     [resources.sources.jenkins-plugin-manager]
     url = "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.13.2/jenkins-plugin-manager-2.13.2.jar"
     sha256 = "98cdd261c64a4f51fbbf161287be77c9dbd0acb0c58b1916fdbc9dce03b47f9c"
     format = "whatever"
     extract = false
     rename = "jenkins-plugin-manager.jar"
-
-    [resources.sources.main]
-    url = "https://pkg.jenkins.io/debian-stable/binary/jenkins_2.492.1_all.deb"
-    sha256 = "9a0226bfc0510a125966125c18a1273933961991482489f293af16e7912e2122"
-    format = "whatever"
-    extract = false
-    rename = "jenkins.deb"
+    autoupdate.strategy = "latest_github_release"
+    autoupdate.upstream = "https://github.com/jenkinsci/plugin-installation-manager-tool"
 
     [resources.system_user]
     home = "/var/lib/jenkins"
