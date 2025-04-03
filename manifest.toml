@@ -57,7 +57,7 @@ ram.runtime = "50M"
     rename = "jenkins.deb"
     autoupdate.strategy = "latest_github_release"
     autoupdate.asset = "^jenkins_(.*)_all.deb$"
-    autoupdate.version_regex = "^jenkins_(.*)_all.deb$"
+    autoupdate.version_regex = "^jenkins-(.*)$"
     autoupdate.needs_manual_tweaks = true
 
     [resources.sources.jenkins-plugin-manager]
