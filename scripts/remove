@@ -4,7 +4,6 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -27,8 +26,6 @@ fi
 ynh_systemctl --service="$app" --action="stop" --log_path="systemd"
 
 ynh_config_remove_nginx
-
-# Remove other various files specific to the app... such as:
 
 ynh_safe_rm "/etc/default/jenkins"
 
