@@ -70,7 +70,7 @@ ynh_config_add --template="config.xml" --destination="$install_dir/config.xml"
 ynh_script_progression "Installing plugins..."
 
 jenkins_plugin_manager=(
-    ynh_hide_warnings java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+    ynh_hide_warnings $install_dir/jre/bin/java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
 )
 
 # Install plugins for http authentication and ldap.
