@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.544~ynh1"
+version = "2.545~ynh2"
 
 maintainers = [ ]
 
@@ -23,7 +23,7 @@ fund = "https://www.jenkins.io/donate"
 [integration]
 yunohost = ">= 12.1.17"
 helpers_version = "2.1"
-architectures = "all"
+architectures = ["amd64", "arm64"]
 multi_instance = false
 
 ldap = true
@@ -49,8 +49,8 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.544/jenkins_2.544_all.deb"
-    sha256 = "6cf1ab98e14a155b56473b7c8401243827fd94a9118f3648619b8d13db219bcb"
+    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.545/jenkins_2.545_all.deb"
+    sha256 = "cc8e744dada0521eed1a8ea75463b5c1162b36ab43a0e05e8d5f19090d7f7711"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
@@ -68,6 +68,18 @@ ram.runtime = "50M"
     autoupdate.strategy = "latest_github_release"
     autoupdate.upstream = "https://github.com/jenkinsci/plugin-installation-manager-tool"
     autoupdate.asset = "^jenkins-plugin-manager-(.*).jar$"
+
+    [resources.sources.jre]
+    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.9%2B10/OpenJDK21U-jre_x64_linux_hotspot_21.0.9_10.tar.gz"
+    amd64.sha256 = "aeab55d064a1a27a3744b0880b9b414077b4ed2b1790817eea3df60aec946431"
+    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.9%2B10/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.9_10.tar.gz"
+    arm64.sha256 = "1d041073c65e834bdb4da732485a54ff829859dcd1549e7992f15bd73341be29"
+    autoupdate.strategy = "latest_github_release"
+    autoupdate.version_regex = "jdk-(\\d+\\.\\d+\\.\\d+)\\+(.*)"
+    autoupdate.upstream = "https://github.com/adoptium/temurin21-binaries"
+    autoupdate.asset.amd64 = "OpenJDK.*-jre_x64_linux_hotspot_.*\\.tar\\.gz$"
+    autoupdate.asset.arm64 = "OpenJDK.*-jre_aarch64_linux_hotspot_.*\\.tar\\.gz$"
+
 
     [resources.system_user]
     home = "/var/lib/jenkins"
@@ -87,7 +99,6 @@ ram.runtime = "50M"
 
     [resources.apt]
     packages = [
-        "openjdk-17-jdk\\|openjdk-21-jdk",
         "daemon",
         "net-tools"
     ]
