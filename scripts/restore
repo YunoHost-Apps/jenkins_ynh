@@ -30,7 +30,7 @@ ynh_script_progression "Setting up $app's service..."
 
 ynh_replace --file="/lib/systemd/system/jenkins.service" \
     --match="Environment=\"JENKINS_PORT=8080\"" \
-    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\"\nEnvironment=\"JAVA_HOME=$install_dir/jre\""
 
 systemctl daemon-reload --quiet
 

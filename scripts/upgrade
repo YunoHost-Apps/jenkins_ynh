@@ -40,6 +40,7 @@ ynh_script_progression "Upgrading source files..."
 # Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="jenkins-plugin-manager" --dest_dir="$install_dir"
+ynh_setup_source --source_id="jre" --dest_dir="$install_dir/jre"
 
 dpkg --install --force-confnew "$install_dir/jenkins.deb"
 ynh_safe_rm "$install_dir/jenkins.deb"
@@ -51,7 +52,7 @@ ynh_script_progression "Setting up application..."
 
 ynh_replace --file="/lib/systemd/system/jenkins.service" \
     --match="Environment=\"JENKINS_PORT=8080\"" \
-    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\""
+    --replace="Environment=\"JENKINS_PORT=$port\"\nEnvironment=\"JENKINS_PREFIX=$path\"\nEnvironment=\"JAVA_HOME=$install_dir/jre\""
 systemctl daemon-reload --quiet
 
 ynh_systemctl --service="$app" --action="restart" --wait_until="Jenkins is fully up and running" --log_path="systemd"
@@ -62,7 +63,7 @@ ynh_systemctl --service="$app" --action="restart" --wait_until="Jenkins is fully
 ynh_script_progression "Upgrading plugins..."
 
 jenkins_plugin_manager=(
-    ynh_hide_warnings java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
+    ynh_hide_warnings $install_dir/jre/bin/java -jar "$install_dir/jenkins-plugin-manager.jar" --war /usr/share/java/jenkins.war --plugin-download-directory="$install_dir/plugins"
 )
 mapfile -t UPDATE_LIST < <("${jenkins_plugin_manager[@]}" --list | grep -o '.*\..*' | grep -oP '^(.*?) ')
 
