@@ -21,7 +21,7 @@ cpe = "cpe:2.3:a:cloudbees:jenkins"
 fund = "https://www.jenkins.io/donate"
 
 [integration]
-yunohost = ">= 12.1.17"
+yunohost = ">= 12.1.38"
 helpers_version = "2.1"
 architectures = ["amd64", "arm64"]
 multi_instance = false
