@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.547~ynh2"
+version = "2.547~ynh3"
 
 maintainers = [ ]
 
@@ -60,8 +60,8 @@ ram.runtime = "50M"
     autoupdate.needs_manual_tweaks = true
 
     [resources.sources.jenkins-plugin-manager]
-    url = "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.13.2/jenkins-plugin-manager-2.13.2.jar"
-    sha256 = "98cdd261c64a4f51fbbf161287be77c9dbd0acb0c58b1916fdbc9dce03b47f9c"
+    url = "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.14.0/jenkins-plugin-manager-2.14.0.jar"
+    sha256 = "aa720c79c658cacc54ae1156252e6eafb770cdc0c8b4f57d51d043e42e956c89"
     format = "whatever"
     extract = false
     rename = "jenkins-plugin-manager.jar"
