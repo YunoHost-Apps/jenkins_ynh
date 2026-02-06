@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.547~ynh3"
+version = "2.549~ynh1"
 
 maintainers = [ ]
 
@@ -49,8 +49,8 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.547/jenkins_2.547_all.deb"
-    sha256 = "8bb8512278d896a613f31983ee6b2ea9a5800c36aa0fdd7e1c4cbf701ee77752"
+    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.549/jenkins_2.549_all.deb"
+    sha256 = "308fcb01c062d2052bd2aa0795a9e17f45247ae029a7ced1f3d10d4980c3dcb1"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
