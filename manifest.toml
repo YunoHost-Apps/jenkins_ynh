@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.561~ynh1"
+version = "2.562~ynh1"
 
 maintainers = [ ]
 
@@ -49,8 +49,8 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.561/jenkins_2.561_all.deb"
-    sha256 = "8a92cd9ef05c66aaaa594cc3baf61c4f6aeda869f8e0e8cca35f397b9d5150c8"
+    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.562/jenkins_2.562_all.deb"
+    sha256 = "a12a270b8cff321451c025382d27ebcc6f9de370e81dea2f852a2cc30f1f920c"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
@@ -70,10 +70,10 @@ ram.runtime = "50M"
     autoupdate.asset = "^jenkins-plugin-manager-(.*).jar$"
 
     [resources.sources.jre]
-    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jre_x64_linux_hotspot_21.0.10_7.tar.gz"
-    amd64.sha256 = "991be6ac6725e76109ecbd131d658f992dcbeacba3a8b4b6650302c8012b52fb"
-    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.10_7.tar.gz"
-    arm64.sha256 = "3ca84da7c4f57eee8d7e7f0645dc904a3a06456d32b37a4dd57a5e7527245250"
+    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jre_x64_linux_hotspot_21.0.11_10.tar.gz"
+    amd64.sha256 = "e5038aae3ca9ff670bc696496b0728dbd23d280026bad30291cb919221ecfdcb"
+    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.11_10.tar.gz"
+    arm64.sha256 = "fa23d9d9945053e67bcc7638410eabf1e17a7672c7c95a24f70cd08b8407d36e"
     autoupdate.strategy = "latest_github_release"
     autoupdate.version_regex = "jdk-(\\d+\\.\\d+\\.\\d+)\\+(.*)"
     autoupdate.upstream = "https://github.com/adoptium/temurin21-binaries"
