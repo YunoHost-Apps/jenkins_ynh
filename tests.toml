@@ -4,4 +4,5 @@ test_format = 1.0
 
 [default]
 
-    test_upgrade_from.1bac2a594e271d0af9fa0bf3dd7e962d1448060d.name = "2.550~ynh1"
+    #test_upgrade_from.1bac2a594e271d0af9fa0bf3dd7e962d1448060d.name = "2.550~ynh1"
+    test_upgrade_from.84d80b2abecea61397f2ec4c1a39e7365b699d03.name = "2.577~ynh1"
