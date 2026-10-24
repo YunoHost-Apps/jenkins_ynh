@@ -70,13 +70,13 @@ ram.runtime = "50M"
     autoupdate.asset = "^jenkins-plugin-manager-(.*).jar$"
 
     [resources.sources.jre]
-    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_x64_linux_hotspot_21.0.12_8.tar.gz"
-    amd64.sha256 = "8a379a67c91a3ae61ffb33d46e0a40c7ba35e70713c4db31cfca30492f792eff"
-    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.12_8.tar.gz"
-    arm64.sha256 = "5f9c96b656827b9d14ebeda7739e25be554fa6d25669b03847c1df6e869c0679"
+    amd64.url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jre_x64_linux_hotspot_25.0.5_8.tar.gz"
+    amd64.sha256 = "6fac98f0c8202efc3135a9e9e42aa61963ec42d1c5cbb40caf231e7b14a24ef6"
+    arm64.url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jre_aarch64_linux_hotspot_25.0.5_8.tar.gz"
+    arm64.sha256 = "963931723891302ebb2687178532c3d793d71e2577cd058061c7efb396140a86"
     autoupdate.strategy = "latest_github_release"
     autoupdate.version_regex = "jdk-(\\d+\\.\\d+\\.\\d+)\\+(.*)"
-    autoupdate.upstream = "https://github.com/adoptium/temurin21-binaries"
+    autoupdate.upstream = "https://github.com/adoptium/temurin25-binaries"
     autoupdate.asset.amd64 = "OpenJDK.*-jre_x64_linux_hotspot_.*\\.tar\\.gz$"
     autoupdate.asset.arm64 = "OpenJDK.*-jre_aarch64_linux_hotspot_.*\\.tar\\.gz$"
 
