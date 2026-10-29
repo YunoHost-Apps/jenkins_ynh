@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.586~ynh1"
+version = "2.588~ynh1"
 
 maintainers = [ ]
 
@@ -49,8 +49,8 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.586/jenkins_2.586_all.deb"
-    sha256 = "acfacfe9478014e04e4bfe63190d2f32ec2bb0f4097692a3ec03ae278e6c645b"
+    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.588/jenkins_2.588_all.deb"
+    sha256 = "ba5337431e975a9c941bd56be6b02136f93dca3217e7bd1db603ef210f1c3b7c"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
@@ -70,10 +70,10 @@ ram.runtime = "50M"
     autoupdate.asset = "^jenkins-plugin-manager-(.*).jar$"
 
     [resources.sources.jre]
-    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_x64_linux_hotspot_21.0.12_8.tar.gz"
-    amd64.sha256 = "8a379a67c91a3ae61ffb33d46e0a40c7ba35e70713c4db31cfca30492f792eff"
-    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.12_8.tar.gz"
-    arm64.sha256 = "5f9c96b656827b9d14ebeda7739e25be554fa6d25669b03847c1df6e869c0679"
+    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_x64_linux_hotspot_21.0.13_9.tar.gz"
+    amd64.sha256 = "a535a1df9c6284d9618872984e026ae0352d1f7e9e0605425c0e6114f47351dd"
+    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.13_9.tar.gz"
+    arm64.sha256 = "b1734db7ade49c3f6acc6ae06233b8c2dd90e3e2f00f67000ae1c972aaa64d8c"
     autoupdate.strategy = "latest_github_release"
     autoupdate.version_regex = "jdk-(\\d+\\.\\d+\\.\\d+)\\+(.*)"
     autoupdate.upstream = "https://github.com/adoptium/temurin21-binaries"
