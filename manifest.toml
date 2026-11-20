@@ -7,7 +7,7 @@ name = "Jenkins"
 description.en = "Extendable continuous integration server"
 description.fr = "Serveur d'intégration continue extensible"
 
-version = "2.586~ynh1"
+version = "2.591~ynh1"
 
 maintainers = [ ]
 
@@ -49,8 +49,8 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.586/jenkins_2.586_all.deb"
-    sha256 = "acfacfe9478014e04e4bfe63190d2f32ec2bb0f4097692a3ec03ae278e6c645b"
+    url = "https://github.com/jenkinsci/jenkins/releases/download/jenkins-2.591/jenkins_2.591_all.deb"
+    sha256 = "b2454da5ad16ef4b15fc3008defc08826bb29dabb80ccf971dad1c897b0cb58d"
     format = "whatever"
     extract = false
     rename = "jenkins.deb"
@@ -60,8 +60,8 @@ ram.runtime = "50M"
     autoupdate.needs_manual_tweaks = true
 
     [resources.sources.jenkins-plugin-manager]
-    url = "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.15.0/jenkins-plugin-manager-2.15.0.jar"
-    sha256 = "a86853ec2e2933f37a4b471ba65099b61e03c87a80c2ef8fe2315eb135672d43"
+    url = "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.16.0/jenkins-plugin-manager-2.16.0.jar"
+    sha256 = "b3e9704f8259ec3d0479703039e2ad5a0a15abb97808ad70d5a59ba2fdd73197"
     format = "whatever"
     extract = false
     rename = "jenkins-plugin-manager.jar"
@@ -70,13 +70,13 @@ ram.runtime = "50M"
     autoupdate.asset = "^jenkins-plugin-manager-(.*).jar$"
 
     [resources.sources.jre]
-    amd64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_x64_linux_hotspot_21.0.12_8.tar.gz"
-    amd64.sha256 = "8a379a67c91a3ae61ffb33d46e0a40c7ba35e70713c4db31cfca30492f792eff"
-    arm64.url = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12%2B8/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.12_8.tar.gz"
-    arm64.sha256 = "5f9c96b656827b9d14ebeda7739e25be554fa6d25669b03847c1df6e869c0679"
+    amd64.url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25%2B36/OpenJDK25U-jre_x64_linux_hotspot_25_36.tar.gz"
+    amd64.sha256 = "5e3de13a1487ecc90f8b0cddc83a6cd4e053b4cd48ddcfe5d1f19178e6089fba"
+    arm64.url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25%2B36/OpenJDK25U-jre_aarch64_linux_hotspot_25_36.tar.gz"
+    arm64.sha256 = "939a1517971985363b2b57b8c6008f4bd48b91f565366d6eb3bae3aa503a05e2"
     autoupdate.strategy = "latest_github_release"
-    autoupdate.version_regex = "jdk-(\\d+\\.\\d+\\.\\d+)\\+(.*)"
-    autoupdate.upstream = "https://github.com/adoptium/temurin21-binaries"
+    autoupdate.version_regex = "jdk-(?P<major>(\\d+)+)\\+(?P<rev>.*)"
+    autoupdate.upstream = "https://github.com/adoptium/temurin25-binaries"
     autoupdate.asset.amd64 = "OpenJDK.*-jre_x64_linux_hotspot_.*\\.tar\\.gz$"
     autoupdate.asset.arm64 = "OpenJDK.*-jre_aarch64_linux_hotspot_.*\\.tar\\.gz$"
 
